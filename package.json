@@ -1,6 +1,8 @@
 {
   "name": "task-management",
   "version": "0.1.0",
+
+  "homepage1": "https://LoknathPraj/task_management_react",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.0",
@@ -28,7 +30,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +53,7 @@
     ]
   },
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "tailwindcss": "^3.4.7"
   }
 }
