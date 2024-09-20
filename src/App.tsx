@@ -15,22 +15,22 @@ export default function App() {
     <BrowserRouter>
       {!appState?.userDetails ? (
         <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Login />} />
+          <Route path="/task_management_react/" element={<Layout />}>
+            <Route  element={<Login />} />
 
-            <Route path="*" element={<NoPage />} />
+            {/* <Route path="*" element={<NoPage />} /> */}
           </Route>
         </Routes>
       ) : (
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route path="/task_management_react/" element={<Layout />}>
           {appState?.userDetails?.user?.role==10001?
             <Route index element={<AddTask />} />
             :
             <Route index element={<ViewAdminDashboard />} />
             }
-
-            <Route path="*" element={<NoPage />} />
+  <Route  element={<Login />} />
+            {/* <Route path="*" element={<NoPage />} /> */}
           </Route>
         </Routes>
       )}
