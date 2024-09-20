@@ -1,26 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useContext } from "react";
+import "./App.css";
+import AddTask from "./pages/AddTask";
+import Login from "./pages/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import NoPage from "./pages/NoPage";
+import { AppContext } from "./context/AppContext";
+import ViewAdminDashboard from "./pages/ViewAdminDashboard";
 
-function App() {
+export default function App() {
+  const appState: any = useContext(AppContext);
+ console.log(appState?.userDetails?.user?.role)
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      {!appState?.userDetails ? (
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Login />} />
+
+            <Route path="*" element={<NoPage />} />
+          </Route>
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/" element={<Layout />}>
+          {appState?.userDetails?.user?.role==10001?
+            <Route index element={<AddTask />} />
+            :
+            <Route index element={<ViewAdminDashboard />} />
+            }
+
+            <Route path="*" element={<NoPage />} />
+          </Route>
+        </Routes>
+      )}
+    </BrowserRouter>
   );
 }
-
-export default App;
