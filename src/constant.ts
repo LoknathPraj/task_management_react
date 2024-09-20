@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:8080/api/";
+export const BASE_URL = "https://task-management-node.vercel.app/api/";
 export const Endpoint = {
   LOGIN: "auth/login",
   ADD_TASK: "worklog/add-worklog",
