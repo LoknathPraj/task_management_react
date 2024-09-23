@@ -143,9 +143,26 @@ if(checkEmptyData()) return
               <option value={""}>Select Projects</option>
               <option value={"FHUP"}>FHUP</option>
               <option value={"LSR"}>LSR</option>
-              <option value={"PW Water"}>PW Water</option>
-              <option value={"Help Desk"}>Help Desk</option>
-              <option value={"Highschope"}>Highschope</option>
+              <option value={"LetterLinks"}>Letter Links</option>
+              <option value={"CorforKindergaten"}>Cor for Kindergaten</option>
+              <option value={"ClassroomCoach"}>Classroom Coach</option>
+              <option value={"CorAdvantage"}>CorAdvantage</option>
+               <option value={"Curriculum"}>Curriculum</option>
+                <option value={"LearningManagementSystem"}>Learning Management System</option>
+                <option value={"PQA"}>PQA</option>
+                <option value={"ReadySchoolAssessment"}>ReadySchoolAssessment</option>
+                <option value={"TPRM"}>TPRM</option>
+                <option value={"PW Water"}>PW Water Mobile</option>
+                <option value={"Acquaa Mobile"}>Acquaa Mobile</option>
+                <option value={"Helpdesk"}>Helpdesk</option>
+                <option value={"Onboarding"}>Onboarding</option>
+
+
+
+
+
+
+
             </select>
           </div>
 

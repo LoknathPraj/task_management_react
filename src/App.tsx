@@ -23,7 +23,7 @@ export default function App() {
       ) : (
         <Routes>
           <Route path="/" element={<Layout />}>
-          {appState?.userDetails?.user?.role==10001?
+          {appState?.userDetails?.user?.role==100001?
             <Route index element={<AddTask />} />
             :
             <Route index element={<ViewAdminDashboard />} />
