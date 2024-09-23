@@ -157,7 +157,7 @@ if(checkEmptyData()) return
                 <option value={"Helpdesk"}>Helpdesk</option>
                 <option value={"Onboarding"}>Onboarding</option>
                 <option value={"HRMS"}>HRMS</option>
-
+                <option value={"Others"}>Others</option>
 
 
 
