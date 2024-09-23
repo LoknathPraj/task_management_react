@@ -10,7 +10,7 @@ import ViewAdminDashboard from "./pages/ViewAdminDashboard";
 
 export default function App() {
   const appState: any = useContext(AppContext);
- console.log(appState?.userDetails?.user?.role)
+
   return (
     <BrowserRouter>
       {!appState?.userDetails ? (

@@ -3,15 +3,18 @@ import { AppContext } from "../context/AppContext";
 import { BASE_URL, Endpoint } from "../constant";
 
 export default function Login() {
-  const [username, setUsername] = useState("ampcus1@gmail.com");
-  const [password, setPassword] = useState("Test@123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const appState: any = useContext(AppContext);
+  const [loading,setLoading]=useState<boolean>(false)
 
   const _onSubmit = (event: any) => {
     event.preventDefault();
     const payload = { email:username, password };
-    console.log(payload);
+    if(username && password){
     doLogin(payload);
+    setLoading(true)
+    }
   };
 
   async function doLogin(payload: any) {
@@ -25,12 +28,16 @@ export default function Login() {
         body: JSON.stringify(payload),
         headers: headersList
       });
-      console.log("response::",response)
+    
       if (response?.status===200) {
+        setLoading(false)
         const data=await response?.json()
         appState.setUserDetails(data);
+      }else{
+        setLoading(false)
       }
     } catch (err) {
+      setLoading(false)
       alert("Something went wrong");
     }
   }
@@ -70,11 +77,13 @@ export default function Login() {
 
         <div className="m-auto text-center mt-15 mb-10">
           <button
+          disabled={loading}
             type="submit"
             className="bg-blue-700 text-white p-2 rounded m-auto w-1/2"
           >
             Login
           </button>
+         {loading&&<p>Loading...</p>}
         </div>
       </div>
     </form>
