@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
-import ViewUserTask from "./ViewUserTask";
 import moment from "moment";
+import ViewUserTask from "./ViewUserTask";
 export default function AddTask() {
-  const appState:any=useContext(AppContext)
+  const appState: any = useContext(AppContext);
   const [project, setProject] = useState("");
   const [taskType, setTaskType] = useState("");
   const [workingHrs, setWorkingHrs] = useState("");
@@ -12,20 +12,19 @@ export default function AddTask() {
   const [description, setDescription] = useState("");
   const [workingDate, setWorkingDate] = useState("");
   const [location, setLocation] = useState("");
-  const [newInsertedData,setNewInsertedData]=useState<any>(null);
-  const[workId,setWorkId]=useState<any>("")
-  
-  const resetForm=()=>{
-    setProject("")
-    setWorkingHrs("")
-    setTaskType("")
-    setWorkingMinutes("")
-    setDescription("")
-    setWorkingDate("")
-    setLocation("")
-    setWorkId("")
-   
-  }
+  const [newInsertedData, setNewInsertedData] = useState<any>(null);
+  const [workId, setWorkId] = useState<any>("");
+
+  const resetForm = () => {
+    setProject("");
+    setWorkingHrs("");
+    setTaskType("");
+    setWorkingMinutes("");
+    setDescription("");
+    setWorkingDate("");
+    setLocation("");
+    setWorkId("");
+  };
 
   const getMinutes = () => {
     const mins = [];
@@ -39,49 +38,54 @@ export default function AddTask() {
   const _submitForm = (event: any) => {
     event.preventDefault();
     const param = {
-      _id:workId,
+      _id: workId,
       project_name: project,
-      task_type:taskType,
-      working_date:workingDate,
-      working_hrs:workingHrs,
-      working_mins:workingMinutes,
+      task_type: taskType,
+      working_date: workingDate,
+      working_hrs: workingHrs,
+      working_mins: workingMinutes,
       location,
-      task_description:  description,
-      username:appState?.userDetails?.user?.name
+      task_description: description,
+      username: appState?.userDetails?.user?.name,
     };
-if(checkEmptyData()) return
-    if(workId){
-    updateTask(param)
-    }else{
-    addTask(param)
+    if (checkEmptyData()) return;
+    if (workId) {
+      updateTask(param);
+    } else {
+      addTask(param);
     }
   };
-  const checkEmptyData=()=>{
-    if(project&&taskType&&workingDate&&workingHrs&&location&&description?.trim()){
-      return false
-    }else return true
-  }
-
- 
+  const checkEmptyData = () => {
+    if (
+      project &&
+      taskType &&
+      workingDate &&
+      workingHrs &&
+      location &&
+      description?.trim()
+    ) {
+      return false;
+    } else return true;
+  };
 
   async function addTask(payload: any) {
     try {
       const url = `${BASE_URL}${Endpoint.ADD_TASK}`;
       let headersList = {
         "Content-Type": "application/json",
-        "Authorization":"bearer "+appState?.userDetails?.token
-       }
-      const response = await fetch(url,{ 
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
         method: "POST",
         body: JSON.stringify(payload),
         headers: headersList,
       });
-      if (response?.status===201) {
-        const data=await response?.json()
-        resetForm()
-        setNewInsertedData({data:data?.data,isInserted:true})        
-      }else{
-        alert("Found duplicate task")
+      if (response?.status === 201) {
+        const data = await response?.json();
+        resetForm();
+        setNewInsertedData({ data: data?.data, isInserted: true });
+      } else {
+        alert("Found duplicate task");
       }
     } catch (err) {
       alert("Something went wrong");
@@ -93,38 +97,45 @@ if(checkEmptyData()) return
       const url = `${BASE_URL}${Endpoint.UPDATE_TASK}/${payload?._id}`;
       let headersList = {
         "Content-Type": "application/json",
-        "Authorization":"bearer "+appState?.userDetails?.token
-       }
-      const response = await fetch(url,{ 
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
         method: "POST",
         body: JSON.stringify(payload),
         headers: headersList,
       });
-      if (response?.status===200) {
-        const data=await response?.json()
-        resetForm()
-        setNewInsertedData({data:data?.worklog
-          ,isInserted:false})       
-      }else{
-        alert("Found duplicate task")
+      if (response?.status === 200) {
+        const data = await response?.json();
+        resetForm();
+        setNewInsertedData({ data: data?.worklog, isInserted: false });
+      } else {
+        alert("Found duplicate task");
       }
     } catch (err) {
       alert("Something went wrong");
     }
   }
 
-
-  const onUpdate=(row:any)=>{
-    const {project_name,task_type,working_date,working_hrs,working_mins,location,task_description,_id}=row
-    setProject(project_name)
-    setWorkingHrs(working_hrs)
-    setTaskType(task_type)
-    setWorkingMinutes(working_mins)
-    setDescription(task_description)
-    setWorkingDate(working_date)
-    setLocation(location)
-    setWorkId(_id)
-  }
+  const onUpdate = (row: any) => {
+    const {
+      project_name,
+      task_type,
+      working_date,
+      working_hrs,
+      working_mins,
+      location,
+      task_description,
+      _id,
+    } = row;
+    setProject(project_name);
+    setWorkingHrs(working_hrs);
+    setTaskType(task_type);
+    setWorkingMinutes(working_mins);
+    setDescription(task_description);
+    setWorkingDate(working_date);
+    setLocation(location);
+    setWorkId(_id);
+  };
   return (
     <div>
       <form className="p-4" onSubmit={_submitForm}>
@@ -133,10 +144,9 @@ if(checkEmptyData()) return
           <div className="w-full mb-2 ">
             <label className="text-left">Projects</label>
             <select
-            required
+              required
               value={project}
               onChange={(e) => setProject(e.target.value)}
-              
               style={{ borderWidth: 1 }}
               className="border-1 border-gray-400 w-full h-8 rounded"
             >
@@ -147,29 +157,28 @@ if(checkEmptyData()) return
               <option value={"CorforKindergaten"}>Cor for Kindergaten</option>
               <option value={"ClassroomCoach"}>Classroom Coach</option>
               <option value={"CorAdvantage"}>CorAdvantage</option>
-               <option value={"Curriculum"}>Curriculum</option>
-                <option value={"LearningManagementSystem"}>Learning Management System</option>
-                <option value={"PQA"}>PQA</option>
-                <option value={"ReadySchoolAssessment"}>ReadySchoolAssessment</option>
-                <option value={"TPRM"}>TPRM</option>
-                <option value={"PW Water"}>PW Water Mobile</option>
-                <option value={"Acquaa Mobile"}>Acquaa Mobile</option>
-                <option value={"Helpdesk"}>Helpdesk</option>
-                <option value={"Onboarding"}>Onboarding</option>
-                <option value={"HRMS"}>HRMS</option>
-                <option value={"Others"}>Others</option>
-
-
-
-
-
+              <option value={"Curriculum"}>Curriculum</option>
+              <option value={"LearningManagementSystem"}>
+                Learning Management System
+              </option>
+              <option value={"PQA"}>PQA</option>
+              <option value={"ReadySchoolAssessment"}>
+                ReadySchoolAssessment
+              </option>
+              <option value={"TPRM"}>TPRM</option>
+              <option value={"PW Water"}>PW Water Mobile</option>
+              <option value={"Acquaa Mobile"}>Acquaa Mobile</option>
+              <option value={"Helpdesk"}>Helpdesk</option>
+              <option value={"Onboarding"}>Onboarding</option>
+              <option value={"HRMS"}>HRMS</option>
+              <option value={"Others"}>Others</option>
             </select>
           </div>
 
           <div>
             <label>Tasks</label>
             <select
-            required
+              required
               value={taskType}
               onChange={(e) => setTaskType(e.target.value)}
               style={{ borderWidth: 1 }}
@@ -219,10 +228,9 @@ if(checkEmptyData()) return
             <div>
               <label>Work Date</label>
               <input
-
-                value={moment(workingDate).format('YYYY-MM-DD')}
+                value={moment(workingDate).format("YYYY-MM-DD")}
                 onChange={(e) => {
-                  setWorkingDate(e.target.value)
+                  setWorkingDate(e.target.value);
                 }}
                 required
                 type="date"
@@ -249,7 +257,7 @@ if(checkEmptyData()) return
           <div className="">
             <label>Descriptions</label>
             <textarea
-             maxLength={2000}
+              maxLength={2000}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
@@ -258,26 +266,30 @@ if(checkEmptyData()) return
             ></textarea>
           </div>
           <div className="m-auto text-center mt-2 flex">
-          <button
-          disabled={checkEmptyData()}
-            type="submit"
-            className={`${checkEmptyData()?"bg-gray-500 text-black-300":"bg-blue-700 text-white"} p-2 rounded m-auto w-1/3`}
-          >
-            {workId?"Update": "Submit"}
-          </button>
-         {workId&& 
-          <button
-          onClick={resetForm}
-            type="button"
-            className="bg-blue-700 text-white p-2 rounded m-auto w-1/3"
-          >
-            Cancel
-          </button>
-}
+            <button
+              disabled={checkEmptyData()}
+              type="submit"
+              className={`${
+                checkEmptyData()
+                  ? "bg-gray-500 text-black-300"
+                  : "bg-blue-700 text-white"
+              } p-2 rounded m-auto w-1/3`}
+            >
+              {workId ? "Update" : "Submit"}
+            </button>
+            {workId && (
+              <button
+                onClick={resetForm}
+                type="button"
+                className="bg-blue-700 text-white p-2 rounded m-auto w-1/3"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </div>
       </form>
-      <ViewUserTask  insertedRecord={newInsertedData} onUpdate={onUpdate}/>
+      <ViewUserTask insertedRecord={newInsertedData} onUpdate={onUpdate} />
     </div>
   );
 }

@@ -1,27 +1,26 @@
-import React from 'react'
+import React, { useState } from "react";
 
 import { Outlet, Link } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Header from "./Header/index";
 
 const Layout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <>
-      {/* <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/blogs">Blogs</Link>
-          </li>
-          <li>
-            <Link to="/contact">Contact</Link>
-          </li>
-        </ul>
-      </nav> */}
-
-      <Outlet />
-    </>
-  )
+    <div className="dark:bg-boxdark-2 dark:text-bodydark bg-[#f1f5f9] font-verdana">
+      <div className={`flex h-screen overflow-hidden `}>
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <main>
+            <div className="mx-auto max-w-screen-2xl py-4  ">
+              <Outlet />
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Layout;

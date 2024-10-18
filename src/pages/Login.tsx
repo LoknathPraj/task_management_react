@@ -1,19 +1,21 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { BASE_URL, Endpoint } from "../constant";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const appState: any = useContext(AppContext);
-  const [loading,setLoading]=useState<boolean>(false)
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const _onSubmit = (event: any) => {
     event.preventDefault();
-    const payload = { email:username, password };
-    if(username && password){
-    doLogin(payload);
-    setLoading(true)
+    const payload = { email: username, password };
+    if (username && password) {
+      doLogin(payload);
+      setLoading(true);
     }
   };
 
@@ -21,23 +23,24 @@ export default function Login() {
     try {
       const url = `${BASE_URL}${Endpoint.LOGIN}`;
       let headersList = {
-        "Content-Type": "application/json"
-       }
-      const response = await fetch(url,{ 
+        "Content-Type": "application/json",
+      };
+      const response = await fetch(url, {
         method: "POST",
         body: JSON.stringify(payload),
-        headers: headersList
+        headers: headersList,
       });
-    
-      if (response?.status===200) {
-        setLoading(false)
-        const data=await response?.json()
+
+      if (response?.status === 200) {
+        setLoading(false);
+        const data = await response?.json();
         appState.setUserDetails(data);
-      }else{
-        setLoading(false)
+        navigate("/dashboard");
+      } else {
+        setLoading(false);
       }
     } catch (err) {
-      setLoading(false)
+      setLoading(false);
       alert("Something went wrong");
     }
   }
@@ -77,13 +80,13 @@ export default function Login() {
 
         <div className="m-auto text-center mt-15 mb-10">
           <button
-          disabled={loading}
+            disabled={loading}
             type="submit"
             className="bg-blue-700 text-white p-2 rounded m-auto w-1/2"
           >
             Login
           </button>
-         {loading&&<p>Loading...</p>}
+          {loading && <p>Loading...</p>}
         </div>
       </div>
     </form>

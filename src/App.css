@@ -27,6 +27,10 @@
 .App-link {
   color: #61dafb;
 }
+.text-bodydark1 {
+  --tw-text-opacity: 1;
+  color: rgb(222 228 238 / var(--tw-text-opacity)) /* #dee4ee */;
+}
 
 @keyframes App-logo-spin {
   from {

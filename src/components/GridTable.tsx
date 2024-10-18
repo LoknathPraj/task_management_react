@@ -15,6 +15,7 @@ interface Props {
   onClickAction?: (type: string, row: any, id?: any) => void;
   showAction?: boolean;
   onClickAdd?: () => void;
+  onClickExport?: () => void;
   onClickFilter?: (id?: string) => void;
   topActionButtonTitle?: string;
   filterButtonTitle?: string;
@@ -36,6 +37,7 @@ function GridTable({
   onClickAction,
   actions = [],
   onClickAdd,
+  onClickExport,
   onClickFilter,
   filterButtonTitle = "Filters",
   topActionButtonTitle = "Add",
@@ -57,7 +59,7 @@ function GridTable({
     if (actions?.length > 0 && columnData) {
       const actionColumn: any = {
         field: "action",
-        headerName: "",
+        headerName: "Action",
         width: 150,
         headerClassName: "super-app-theme--header",
         headerAlign: "center",
@@ -98,7 +100,7 @@ function GridTable({
   };
 
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
       <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
         <div className="flex items-center  rounded-sm border border-bgray ">
           <input
@@ -123,13 +125,13 @@ function GridTable({
           </div>
         </div>
 
-        <div className="grid grid-cols-2">
+        <div className="grid grid-cols-3">
           <div>
             {onClickFilter && (
               <>
                 <Tooltip title={"Apply Filters"}>
                   <div
-                    className="cursor-pointer w-25 h-9  text-white flex items-center justify-center bg-primary border border-white rounded-lg"
+                    className="cursor-pointer w-25 h-9 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickFilter && onClickFilter();
                     }}
@@ -146,13 +148,30 @@ function GridTable({
               <>
                 <Tooltip title={toolTipName}>
                   <div
-                    className="cursor-pointer w-20 h-9 text-white flex items-center justify-center bg-primary border border-white rounded-lg"
+                    className="cursor-pointer w-20 h-9 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickAdd && onClickAdd();
                     }}
                   >
                     <span className="mr-1">{topActionButtonTitle}</span>
                     <FaPlus className="h-4 w-4" />
+                  </div>
+                </Tooltip>
+              </>
+            )}
+          </div>
+          <div>
+            {onClickExport && (
+              <>
+                <Tooltip title={toolTipName}>
+                  <div
+                    className="cursor-pointer w-20 h-9 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    onClick={() => {
+                      onClickExport && onClickExport();
+                    }}
+                  >
+                    <span className="mr-1">Export</span>
+                    <FaPlus className="h-3 w-3" />
                   </div>
                 </Tooltip>
               </>
@@ -188,7 +207,7 @@ function GridTable({
           </div>
         )}
       </div>
-      <div style={{ height: 620, width: "100%" }} className="max-h-fit">
+      <div style={{ height: 450, width: "100%" }} className="max-h-fit">
         <DataGrid
           sx={{
             "& .super-app-theme--header": {
@@ -199,9 +218,8 @@ function GridTable({
             "& .MuiDataGrid-cell": {
               fontFamily: "sans-serif",
               maxHeight: "200px",
-              paddingTop:'15px',
-              paddingBottom:"15px",
-           
+              paddingTop: "15px",
+              paddingBottom: "15px",
             },
           }}
           getRowHeight={(params) => "auto"}

@@ -6,7 +6,7 @@ import { AppContext } from "../context/AppContext";
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   const [rows, setRows] = useState<Array<any>>([]);
   const appState: any = useContext(AppContext);
-  const[userList,setUserList]=useState([])
+  const [userList, setUserList] = useState([]);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -47,7 +47,9 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       if (insertedRecord?.isInserted) {
         setRows([lRecord, ...rows]);
       } else if (!insertedRecord?.isInserted) {
-        const index = rows.findIndex((e:any) => e?._id === lInsertedRecord?._id);
+        const index = rows.findIndex(
+          (e: any) => e?._id === lInsertedRecord?._id
+        );
         const copyRow = [...rows];
         copyRow[index] = lRecord;
         setRows(copyRow);
@@ -98,8 +100,13 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   };
 
-  const onClickAction = (value: any, row?: any, _id?: any) => {
+  const BASE_URL = "http://localhost:8080/api/";
+  const downloadExcel = async () => {
+    const url = `${BASE_URL}worklog/downloadExcel`;
+    window.location.href = url;
+  };
 
+  const onClickAction = (value: any, row?: any, _id?: any) => {
     if (value === "DELETE") {
       deleteTaskById(row?._id);
     } else if (value === "EDIT") {
@@ -141,9 +148,8 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       field: "task_description",
       headerName: "Descriptions",
       width: 200,
-      height:400,
+      height: 400,
       headerClassName: "super-app-theme--header",
-      
     },
     {
       field: "location",
@@ -151,12 +157,11 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       width: 200,
       headerClassName: "super-app-theme--header",
     },
-    
   ];
 
-  useEffect(()=>{
-    getUsers()
-  },[])
+  useEffect(() => {
+    getUsers();
+  }, []);
 
   const getUsers = async () => {
     const url = `${BASE_URL}${Endpoint.getUserList}`;
@@ -171,15 +176,14 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     if (response?.status === 200) {
       const data = await response?.json();
       const lUserList = data?.data;
-setUserList(lUserList)
+      setUserList(lUserList);
     }
   };
 
-  const getTaskByUserId = async (userId:any) => {
-    if(!userId){
-       getTask()
-       return
-
+  const getTaskByUserId = async (userId: any) => {
+    if (!userId) {
+      getTask();
+      return;
     }
     const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
     let headersList = {
@@ -203,22 +207,25 @@ setUserList(lUserList)
     }
   };
 
-
-  
-
-
   return (
     <div>
+      <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
+        Tasks
+      </h1>
+      <div className="w-full items-end">
+        
+      </div>
       <div className="m-5">
         <GridTable
-        // showAction={false}
-        //   onClickAction={onClickAction}
+          // showAction={false}
+          //   onClickAction={onClickAction}
           // actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
           toolTipName={"Create Team"}
           filterDropdownData={userList}
-          onClickFilter={(id)=>getTaskByUserId(id)}
+          onClickFilter={(id) => getTaskByUserId(id)}
+          onClickExport={() => downloadExcel}
         />
       </div>
     </div>
