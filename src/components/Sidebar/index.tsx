@@ -5,6 +5,8 @@ import { MdOutlineCancel } from "react-icons/md";
 import { RxDashboard } from "react-icons/rx";
 import GroupIcon from "@mui/icons-material/Group";
 import { AppContext } from "../../context/AppContext";
+import LanIcon from "@mui/icons-material/Lan";
+import TerminalIcon from "@mui/icons-material/Terminal";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -22,7 +24,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const sidebarExpanded =
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true";
 
-  // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
@@ -38,7 +39,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     return () => document.removeEventListener("click", clickHandler);
   });
 
-  // close if the esc key is pressed
   useEffect(() => {
     const keyHandler = ({ keyCode }: KeyboardEvent) => {
       if (!sidebarOpen || keyCode !== 27) return;
@@ -118,6 +118,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Users
                     </NavLink>
                   </li>
+                  <li>
+                    <NavLink
+                      to="/project"
+                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                    >
+                      <TerminalIcon className="w-5 h-5 " />
+                      Projects
+                    </NavLink>
+                  </li>
                 </ul>
               ) : (
                 ""
@@ -165,6 +174,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     >
                       <TaskIcon className="w-5 h-5 " />
                       Admins
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/department"
+                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                    >
+                      <LanIcon className="w-5 h-5 " />
+                      Departments
                     </NavLink>
                   </li>
                 </ul>

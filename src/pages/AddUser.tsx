@@ -15,6 +15,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { showNotification } from "../components/Toast";
+// import { Oval } from "react-loader-spinner";
+ 
 
 function AddUser() {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ function AddUser() {
   // const [matchFocus, setMatchFocus] = useState(false);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
+  const [loading, setLoading] = useState<any>(false)
 
   const columns: any[] = [
     {
@@ -290,16 +293,24 @@ function AddUser() {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
-
-    const response = await fetch(url, {
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+    try {const response = await fetch(url, {
       method: "PUT",
       headers: headersList,
       body: JSON.stringify(data),
     });
+    if(response){
+      console.log(response)
+      setLoading(false)
+    }
+  } catch(error){
+    console.log(error)
+    setLoading(false)
+  }
   };
   const updateUser = async (data: any, id: any) => {
     const url = `http://localhost:8080/api/auth/updateUserById/${id}`;
-    let headersList = {
+    let headersList = {      
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
@@ -324,6 +335,7 @@ function AddUser() {
   };
   const handleSubmit = async () => {
     if (validateForm()) {
+      setLoading(true)
       const userData: any = {
         ...formData,
         designationId: Number(formData?.designationId?.value),
@@ -337,6 +349,7 @@ function AddUser() {
       } else {
         await createUser(userData);
       }
+      setLoading(false)
       setIsModalOpen(!isModalOpen);
       setFormData({});
       setMatchPwd("");
@@ -363,7 +376,7 @@ function AddUser() {
       </div>
       {isModalOpen && (
         <Modal
-          isLoading={false}
+          isLoading={loading}
           customFooter={true}
           //modalSize=""
           //modalHeight=""
@@ -644,6 +657,31 @@ function AddUser() {
                         },
                       }}
                     />
+                  </div>
+                  <div className=" mb-6">
+                    <TextField
+                      className="w-80"
+                      label="Employee ID"
+                      name="empId"
+                      required={requiredInputFields.empId}
+                      error={formErrors?.empId || ""}
+                      value={formData?.empId || ""}
+                      type="text"
+                      onChange={handleInputChange}
+                      InputLabelProps={{
+                        sx: {
+                          marginTop: "-8px",
+                        },
+                      }}
+                      sx={{
+                        ".MuiInputBase-root": {
+                          height: "40px",
+                        },
+                      }}
+                    />
+                    <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.name || ""}
+                    </div>
                   </div>
                 </div>
               </div>

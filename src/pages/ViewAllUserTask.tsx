@@ -2,11 +2,30 @@ import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
+import { departmentOptions } from "src/utils";
+import useAxios from "../context/useAxios";
 
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
+  interface Department {
+    createdAt: string; // ISO date string
+    id: string; // Unique identifier
+    is_active: boolean; // Status of the department
+    name: string; // Name of the department
+    projects: any[]; // Assuming projects can be of any type, you can specify a more accurate type if needed
+    updatedAt: string; // ISO date string
+    __v: number; // Version key, if applicable
+    _id: string; // Another unique identifier, often the same as `id`
+  }
+
   const [rows, setRows] = useState<Array<any>>([]);
   const appState: any = useContext(AppContext);
   const [userList, setUserList] = useState([]);
+  const [departmentValue, setDepartmentValue] = useState<any>();
+  const [userDetails, setUserDetails] = useState();
+  const [departmentData, setDepartmentData] = useState<
+    Department[] | undefined
+  >();
+  const [selectedValueInDropdown, setSelectedValueInDropdown] = useState<any>();
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -60,7 +79,46 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   useEffect(() => {
     getTask();
   }, []);
+  const axiosHandler = useAxios();
+  const getUserDetails = async () => {
+    try {
+      const response = await axiosHandler.get(`auth/getUserList`);
 
+      const data = response?.data?.data;
+      setUserDetails(data);
+    } catch (error: any) {}
+  };
+  useEffect(() => {
+    getUserDetails();
+  }, []);
+
+  
+
+  const getAllDept = async () => {
+    try {
+      const response = await axiosHandler.post(`department/getDepartmentbyIds`);
+      const data = response?.data?.data;
+      setDepartmentData(data);
+    } catch (error: any) {}
+  };
+  useEffect(() => {
+    getAllDept();
+  }, []);
+
+  const departments = appState?.userDetails?.user?.department;
+
+  const deptOptions = departments
+    ?.map((deptId: string) => {
+      const department = departmentData?.find(
+        (dept: Department) => dept.id === deptId
+      );
+
+      return department
+        ? { value: department.id, label: department.name }
+        : null;
+    })
+    .filter(Boolean);
+  
   const getTask = async () => {
     const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
     let headersList = {
@@ -100,7 +158,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   };
 
-  const BASE_URL = "http://localhost:8080/api/";
+  // const BASE_URL = "http://localhost:8080/api/";
   const downloadExcel = async () => {
     const url = `${BASE_URL}worklog/downloadExcel`;
     window.location.href = url;
@@ -206,15 +264,16 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       setRows(r);
     }
   };
+  const handleDropdownChangeInGridTable = (option: any) => {
+    setSelectedValueInDropdown(option);
+  };
 
   return (
     <div>
       <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
         Tasks
       </h1>
-      <div className="w-full items-end">
-        
-      </div>
+      <div className="w-full items-end"></div>
       <div className="m-5">
         <GridTable
           // showAction={false}
@@ -226,6 +285,11 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           filterDropdownData={userList}
           onClickFilter={(id) => getTaskByUserId(id)}
           onClickExport={() => downloadExcel}
+          onClickDropdown={handleDropdownChangeInGridTable}
+          selectedValue={selectedValueInDropdown}
+          dropdownLabel={"Departments"}
+          dropdownOptions={deptOptions}
+          dropdownName={"department"}
         />
       </div>
     </div>

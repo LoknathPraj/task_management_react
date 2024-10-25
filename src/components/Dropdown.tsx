@@ -112,9 +112,10 @@ const Dropdown: React.FC<DropdownProps> = ({
         styles={customStyles}
         className={className}
       />
+      
 
       <div
-        className={`text-xs flex h-[1em] transition-opacity duration-150 mt-1 ${
+        className={`text-xs flex h-[1em] transition-opacity duration-150 mt-1${
           errorMessage ? "text-[#FF0000]" : "text-[#4255ac]"
         } ${
           errorMessage || message ? "opacity-100" : "opacity-0"

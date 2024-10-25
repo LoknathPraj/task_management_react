@@ -154,6 +154,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}
           rowData={rows}
+        
           columnData={columns}
           toolTipName={"Create Team"}
         />

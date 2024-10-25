@@ -7,7 +7,7 @@ import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import Modal from "../components/Modal";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
-import { departmentOptions, designationOptions } from "../utils/index";
+import { designationOptions } from "../utils/index";
 import {
   faCheck,
   faTimes,
@@ -15,6 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { showNotification } from "../components/Toast";
+import Dropdown from "../components/Dropdown";
 
 function AddAdmin() {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ function AddAdmin() {
   // const [matchFocus, setMatchFocus] = useState(false);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
+  const [loading, setLoading] = useState<any>(false);
+  // const [departmentOptions, setDepartmentOptions] = useState<any>()
+  const [departmentData, setDepartmentData] = useState<any>();
 
   const columns: any[] = [
     {
@@ -109,6 +113,23 @@ function AddAdmin() {
   useEffect(() => {
     getUserDetails();
   }, []);
+
+  const getAllDept = async () => {
+    try {
+      const response = await axiosHandler.post(`department/getDepartmentbyIds`);
+      const data = response?.data?.data;
+      setDepartmentData(data);
+    } catch (error: any) {}
+  };
+  useEffect(() => {
+    getAllDept();
+  }, []);
+
+  const deptOptions = departmentData?.map((item: any) => ({
+    value: item?.id,
+    label: item?.name,
+  }));
+
   useEffect(() => {
     if (Array.isArray(userList)) {
       const formattedRows = userList.map((user: any, index: number) => ({
@@ -118,12 +139,11 @@ function AddAdmin() {
         designation: designationOptions.find(
           (item: any) => item.value == user?.designationId
         )?.label,
-        department: departmentOptions.find(
-          (item: any) => item.value == user?.deptId
-        )?.label,
+        // department: departmentOptions.find(
+        //   (item: any) => item.value == user?.deptId
+        // )?.label,
         joiningDate: formatDate(user?.joiningDate),
       }));
-
       setRows(formattedRows);
     }
   }, [userList]);
@@ -141,9 +161,11 @@ function AddAdmin() {
     email: true,
     mobile: true,
     password: true,
-    deptId: true,
+    // deptId: true,
     designationId: true,
   };
+
+  const handleChange = () => {};
   const formatLabel = (key: any) => {
     if (!key) return;
     return key
@@ -203,7 +225,6 @@ function AddAdmin() {
       }
     });
     setFormErrors(validationErrors);
-    console.log("validationErrors: ", validationErrors);
 
     return Object.keys(validationErrors).length === 0;
   };
@@ -230,8 +251,8 @@ function AddAdmin() {
       designationId: designationOptions.find(
         (item: any) => item.value == user?.designationId
       )?.label,
-      deptId: departmentOptions.find((item: any) => item.value == user?.deptId)
-        ?.label,
+      // deptId: departmentOptions.find((item: any) => item.value == user?.deptId)
+      //   ?.label,
     };
     setFormData(userDetails);
     setIsModalOpen(true);
@@ -240,12 +261,18 @@ function AddAdmin() {
   const deleteUserById = async (id: any) => {
     try {
       const response = await axiosHandler.get(`auth/deleteUserById/${id}`);
-
+      if (response) {
+        setLoading(false);
+      }
       getUserDetails();
-    } catch (error: any) {}
+    } catch (error: any) {
+      setLoading(false);
+    }
   };
   const handleDelete = (_id: string) => {
+    setLoading(true);
     deleteUserById(_id);
+    setLoading(false);
   };
 
   const onClickAction = (actionType: any, row: any, id: any) => {
@@ -268,10 +295,12 @@ function AddAdmin() {
       designationId: option,
     }));
   };
-  const handleDepartmentChange = (e: any, option: any) => {
+  const handleDropdownChange = (option: any) => {
+    console.log(option, "hi");
+
     setFormData((prevValues: any) => ({
       ...prevValues,
-      deptId: option,
+      departmentIds: option,
     }));
   };
   // const createUser = async (data: any) => {
@@ -282,7 +311,6 @@ function AddAdmin() {
   // };
 
   const appState: any = useContext(AppContext);
-  console.log("appState: ", appState);
 
   const createUser = async (data: any) => {
     const url = `http://localhost:8080/api/auth/signup`;
@@ -290,12 +318,19 @@ function AddAdmin() {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: headersList,
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: headersList,
+        body: JSON.stringify(data),
+      });
+      if (response) {
+        setLoading(false);
+        showNotification("success", "Admin created successfully!")
+      }
+    } catch (error) {
+      setLoading(false);
+    }
   };
   const updateUser = async (data: any, id: any) => {
     const url = `http://localhost:8080/api/auth/updateUserById/${id}`;
@@ -303,14 +338,18 @@ function AddAdmin() {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
-    const response = await fetch(url, {
-      method: "POST",
-      headers: headersList,
-      body: JSON.stringify(data),
-    });
-
-    if (response) {
-      getUserDetails();
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headersList,
+        body: JSON.stringify(data),
+      });
+      if (response) {
+        getUserDetails();
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
     }
   };
 
@@ -324,12 +363,13 @@ function AddAdmin() {
   };
   const handleSubmit = async () => {
     if (validateForm()) {
+      setLoading(true);
       const userData: any = {
         ...formData,
         designationId: Number(formData?.designationId?.value),
-        deptId: Number(formData?.deptId?.value),
+        departmentIds: formData?.departmentIds?.map((item:any)=>item?.value),
         password: matchPwd,
-        role: 10000,
+        role: 10001,
       };
 
       if (userData?.id) {
@@ -363,11 +403,11 @@ function AddAdmin() {
       </div>
       {isModalOpen && (
         <Modal
-          isLoading={false}
+          isLoading={loading}
           customFooter={true}
           //modalSize=""
           //modalHeight=""
-          modalHeader={"Create User"}
+          modalHeader={"Create Admin"}
           modalBody={
             <div>
               <div className="relative mt-5 mb-3">
@@ -499,35 +539,32 @@ function AddAdmin() {
                       {formErrors?.email || ""}
                     </div>
                   </div>
-                  <div className="mb-6">
-                    <Autocomplete
+                  <div className=" mb-6">
+                    <TextField
                       className="w-80"
-                      options={departmentOptions}
-                      value={formData?.deptId}
-                      onChange={handleDepartmentChange}
+                      label="Employee ID"
+                      name="empId"
+                      required={requiredInputFields.empId}
+                      error={formErrors?.empId || ""}
+                      value={formData?.empId || ""}
+                      type="text"
+                      onChange={handleInputChange}
+                      InputLabelProps={{
+                        sx: {
+                          marginTop: "-8px",
+                        },
+                      }}
                       sx={{
                         ".MuiInputBase-root": {
                           height: "40px",
                         },
                       }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Department"
-                          name="deptId"
-                          required={requiredInputFields.deptId}
-                          InputLabelProps={{
-                            sx: {
-                              marginTop: "-8px",
-                            },
-                          }}
-                        />
-                      )}
                     />
                     <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.deptId || ""}
+                      {formErrors?.name || ""}
                     </div>
                   </div>
+
                   <div className=" mb-6 relative">
                     {/* <p className="absolute left-17 top-[-21px]">
                       <span className="text-red-600">*</span>
@@ -644,6 +681,27 @@ function AddAdmin() {
                         },
                       }}
                     />
+                  </div>
+
+                  <div className="">
+            
+                    <Dropdown
+                      submitRef={true}
+                      multiple={true}
+                      defaultValue={formData?.departmentIds || null}
+                      options={deptOptions}
+                      handleChange={handleDropdownChange}
+                      errorMessage={formErrors?.departmentIds}
+                      requiredField={
+                        requiredInputFields?.ldepartmentIds || false
+                      }
+                      defaultLabel="Choose Departments"
+                      label=""
+                      className="h-[39px]"
+                    />
+                    <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.deptId || ""}
+                    </div>
                   </div>
                 </div>
               </div>

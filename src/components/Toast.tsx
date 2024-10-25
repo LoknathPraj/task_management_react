@@ -5,13 +5,13 @@ type NotificationType = "success" | "info" | "warning" | "error";
 
 export const showNotification = (
   type: NotificationType,
-  description: string
+  message: string
 ) => {
   notification[type]({
-    message: `Notification ${type}`,
-    description,
+    message,
     placement: "topRight",
     duration: 3,
     showProgress: true,
+
   });
 };

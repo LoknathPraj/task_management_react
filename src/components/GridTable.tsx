@@ -3,7 +3,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { IoSearchSharp } from "react-icons/io5";
 import { escapeRegExp } from "@mui/x-data-grid/internals";
 import { RxCross2 } from "react-icons/rx";
-import { Tooltip } from "@mui/material";
+import { Autocomplete, TextField, Tooltip } from "@mui/material";
 import { TbTrash } from "react-icons/tb";
 import { FiEdit, FiEye } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
@@ -15,6 +15,7 @@ interface Props {
   onClickAction?: (type: string, row: any, id?: any) => void;
   showAction?: boolean;
   onClickAdd?: () => void;
+  onClickDropdown?: (option:any) => void;
   onClickExport?: () => void;
   onClickFilter?: (id?: string) => void;
   topActionButtonTitle?: string;
@@ -22,6 +23,12 @@ interface Props {
   toolTipName?: string;
   actions?: Array<"DELETE" | "EDIT" | "VIEW">;
   filterDropdownData?: Array<any>;
+  dropdownLabel?:any,
+  dropdownName?:any,
+  dropdownOptions?:any,
+  selectedValue?:any
+
+
   // checkbox:boolean
   // onPageChange?: (currentPage: any) => void;
   // onRowsPerPageChange?: (rowCountPage: any) => void;
@@ -39,10 +46,15 @@ function GridTable({
   onClickAdd,
   onClickExport,
   onClickFilter,
+  onClickDropdown,
   filterButtonTitle = "Filters",
   topActionButtonTitle = "Add",
   toolTipName,
   filterDropdownData = [],
+  dropdownLabel,
+  dropdownName,
+  dropdownOptions,
+  selectedValue
 }: Props) {
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState<Array<any>>([]);
@@ -125,13 +137,46 @@ function GridTable({
           </div>
         </div>
 
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
+          <div>
+            {onClickDropdown && (
+              <>
+                <Tooltip title={"Apply Filters"}>
+                  <div>
+                    <Autocomplete
+                      className="w-50"
+                      options={dropdownOptions}
+                      value={selectedValue}
+                      onChange={onClickDropdown}
+                      sx={{
+                        ".MuiInputBase-root": {
+                          height: "40px",
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={dropdownLabel}
+                          name={dropdownName}
+                          InputLabelProps={{
+                            sx: {
+                              marginTop: "-8px",
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
+                </Tooltip>
+              </>
+            )}
+          </div>
           <div>
             {onClickFilter && (
               <>
                 <Tooltip title={"Apply Filters"}>
                   <div
-                    className="cursor-pointer w-25 h-9 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-25 h-9 ml-12 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickFilter && onClickFilter();
                     }}
@@ -148,7 +193,7 @@ function GridTable({
               <>
                 <Tooltip title={toolTipName}>
                   <div
-                    className="cursor-pointer w-20 h-9 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-20 h-9 ml-12 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickAdd && onClickAdd();
                     }}
@@ -165,7 +210,7 @@ function GridTable({
               <>
                 <Tooltip title={toolTipName}>
                   <div
-                    className="cursor-pointer w-20 h-9 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-20 h-9 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickExport && onClickExport();
                     }}

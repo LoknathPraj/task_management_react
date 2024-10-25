@@ -47,6 +47,7 @@ export default function AddTask() {
       location,
       task_description: description,
       username: appState?.userDetails?.user?.name,
+      departmentId: appState?.userDetails?.user?.departmentId,
     };
     if (checkEmptyData()) return;
     if (workId) {
@@ -276,6 +277,7 @@ export default function AddTask() {
               } p-2 rounded m-auto w-1/3`}
             >
               {workId ? "Update" : "Submit"}
+              
             </button>
             {workId && (
               <button
