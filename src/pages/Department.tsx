@@ -290,7 +290,7 @@ function Department() {
                       }}
                     />
                   </div>
-                  <div className=" ml-15 mb-4 mt-[-10px]">
+                  {/* <div className=" ml-15 mb-4 mt-[-10px]">
                     <Radio
                       label={"Is Active:"}
                       options={[
@@ -301,7 +301,7 @@ function Department() {
                       name={""}
                       onChange={handleRadioChange}
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

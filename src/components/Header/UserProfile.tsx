@@ -199,13 +199,13 @@ function UserProfile() {
   };
 
   const appState: any = useContext(AppContext);
-  console.log("appState: ", appState);
+  
 
   const userDetail = appState?.userDetails?.userId;
-  console.log("userDetail: ", userDetail);
+  
   const thisUser = userList?.find((user: any) => user?._id === userDetail);
-  console.log("userList: ", userList);
-  console.log("thisUser: ", thisUser);
+  
+  
 
   // useEffect(() => {
   //   if (thisUser) {
@@ -220,10 +220,7 @@ function UserProfile() {
         <h1 className="py-2  rounded-sm mb-4 mx-auto bg-blue-700 text-white text-center text-2xl">
           My Profile
         </h1>
-        <div className="bg-white h-[34rem]">
-          <div className="relative mb-4 mt-6 bg-w ">
-            <div className="flex flex-col xsm:flex-row justify-between items-center">
-              <div
+        <div
                 className="mx-auto mt-6"
                 style={{
                   width: "150px",
@@ -236,10 +233,14 @@ function UserProfile() {
               >
                 <ProfileImageUploader />
               </div>
+        <div className="bg-white h-[25rem] w-[80%] mx-auto">
+          <div className="relative mb-4 mt-6 bg-w ">
+            <div className="flex flex-col xsm:flex-row justify-between items-center">
+              
             </div>
           </div>
           <div className="relative">
-            <div className="grid grid-cols-1 md:grid-cols-2 mt-10 ml-35">
+            <div className="grid grid-cols-1 md:grid-cols-2 mt-10 ml-20">
               <div className=" mb-8">
                 <TextField
                   className="w-80"

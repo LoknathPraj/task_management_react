@@ -33,6 +33,7 @@ function AddUser() {
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
   const [loading, setLoading] = useState<any>(false)
+  const [departmentData, setDepartmentData] = useState<any>();
 
   const columns: any[] = [
     {
@@ -99,6 +100,32 @@ function AddUser() {
     const match = pwd === matchPwd;
     setValidMatch(match);
   }, [pwd, matchPwd]);
+  const getAllDept = async () => {
+    try {
+      const response = await axiosHandler.post(`department/getDepartmentbyIds`);
+      const data = response?.data?.data;
+      setDepartmentData(data);
+    } catch (error: any) {}
+  };
+  useEffect(() => {
+    getAllDept();
+  }, []);
+
+
+  const deptOptions = departmentData?.map((item: any) => ({
+
+    value: item?.id,
+    label: item?.name,
+  }));
+  const deptcheck =  userList?.department?.map((departmentId:any) => 
+    deptOptions?.find(
+      (item: { value: string; label: string }) => item.value === departmentId
+    )?.label )
+
+
+ 
+  
+  
 
   const axiosHandler = useAxios();
   const getUserDetails = async () => {
@@ -112,18 +139,21 @@ function AddUser() {
   useEffect(() => {
     getUserDetails();
   }, []);
+  const EmployeeList = userList?.filter((item: any) => item?.role === 10000);
   useEffect(() => {
-    if (Array.isArray(userList)) {
-      const formattedRows = userList.map((user: any, index: number) => ({
+    if (Array.isArray(EmployeeList)) {
+      const formattedRows = EmployeeList.map((user: any, index: number) => ({
         ...user,
         id: user?._id,
         s_no: index + 1,
         designation: designationOptions.find(
           (item: any) => item.value == user?.designationId
         )?.label,
-        department: departmentOptions.find(
-          (item: any) => item.value == user?.deptId
-        )?.label,
+        department: user.department.map((departmentId:any) => 
+          deptOptions?.find(
+            (item: { value: string; label: string }) => item.value === departmentId
+          )?.label 
+        ),
         joiningDate: formatDate(user?.joiningDate),
       }));
 
@@ -206,7 +236,7 @@ function AddUser() {
       }
     });
     setFormErrors(validationErrors);
-    console.log("validationErrors: ", validationErrors);
+    
 
     return Object.keys(validationErrors).length === 0;
   };
@@ -226,7 +256,7 @@ function AddUser() {
   };
 
   const handleEdit = (user: any) => {
-    showNotification("info", "Edit User");
+  
     const userDetails = {
       ...user,
       joiningDate: formatDate(user?.joiningDate),
@@ -249,6 +279,7 @@ function AddUser() {
   };
   const handleDelete = (_id: string) => {
     deleteUserById(_id);
+    showNotification("success", "User deleted succesfully!");
   };
 
   const onClickAction = (actionType: any, row: any, id: any) => {
@@ -285,7 +316,7 @@ function AddUser() {
   // };
 
   const appState: any = useContext(AppContext);
-  console.log("appState: ", appState);
+  
 
   const createUser = async (data: any) => {
     const url = `http://localhost:8080/api/auth/signup`;
@@ -293,18 +324,18 @@ function AddUser() {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
-    await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
     try {const response = await fetch(url, {
       method: "PUT",
       headers: headersList,
       body: JSON.stringify(data),
     });
     if(response){
-      console.log(response)
+      
       setLoading(false)
+      showNotification("success", "User created succesfully!");
     }
   } catch(error){
-    console.log(error)
+    
     setLoading(false)
   }
   };
@@ -322,6 +353,7 @@ function AddUser() {
 
     if (response) {
       getUserDetails();
+      showNotification("success", "User updated succesfully!");
     }
   };
 
@@ -339,7 +371,7 @@ function AddUser() {
       const userData: any = {
         ...formData,
         designationId: Number(formData?.designationId?.value),
-        deptId: Number(formData?.deptId?.value),
+        department: Number(formData?.deptId?.value),
         password: matchPwd,
         role: 10000,
       };
@@ -515,7 +547,7 @@ function AddUser() {
                   <div className="mb-6">
                     <Autocomplete
                       className="w-80"
-                      options={departmentOptions}
+                      options={deptOptions}
                       value={formData?.deptId}
                       onChange={handleDepartmentChange}
                       sx={{

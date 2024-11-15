@@ -57,7 +57,7 @@ function AddAdmin() {
     },
     {
       field: "department",
-      headerName: "Department",
+      headerName: "Departments",
       width: 200,
       headerClassName: "super-app-theme--header",
     },
@@ -130,22 +130,29 @@ function AddAdmin() {
     label: item?.name,
   }));
 
+ 
+  const adminList = userList?.filter((item: any) => item?.role === 10001);
+  
+
   useEffect(() => {
-    if (Array.isArray(userList)) {
-      const formattedRows = userList.map((user: any, index: number) => ({
+    if (Array.isArray(adminList)) {
+      const formattedRows = adminList.map((user: any, index: number) => ({
         ...user,
         id: user?._id,
         s_no: index + 1,
-        designation: designationOptions.find(
+        designation: designationOptions?.find(
           (item: any) => item.value == user?.designationId
         )?.label,
-        // department: departmentOptions.find(
-        //   (item: any) => item.value == user?.deptId
-        // )?.label,
+        department: user.department.map((departmentId:any) => 
+          deptOptions?.find(
+            (item: { value: string; label: string }) => item.value === departmentId
+          )?.label 
+        ),
         joiningDate: formatDate(user?.joiningDate),
       }));
       setRows(formattedRows);
     }
+    
   }, [userList]);
   const formatDate = (dateString: any) => {
     const date = new Date(dateString);
@@ -251,11 +258,18 @@ function AddAdmin() {
       designationId: designationOptions.find(
         (item: any) => item.value == user?.designationId
       )?.label,
-      // deptId: departmentOptions.find((item: any) => item.value == user?.deptId)
-      //   ?.label,
+      department: user?.department.map((departmentLabel: string) => {
+        // Find the option where the label matches the department label
+        const department = deptOptions.find(
+          (item: { label: string; value: string }) => item.label === departmentLabel
+        );
+        return department ? department.value : "Unknown ID"; // Fallback for unmatched labels
+      })
     };
     setFormData(userDetails);
     setIsModalOpen(true);
+
+    
   };
 
   const deleteUserById = async (id: any) => {
@@ -263,6 +277,7 @@ function AddAdmin() {
       const response = await axiosHandler.get(`auth/deleteUserById/${id}`);
       if (response) {
         setLoading(false);
+        showNotification("success", "Admin deleted successfully!")
       }
       getUserDetails();
     } catch (error: any) {
@@ -296,11 +311,11 @@ function AddAdmin() {
     }));
   };
   const handleDropdownChange = (option: any) => {
-    console.log(option, "hi");
+ 
 
     setFormData((prevValues: any) => ({
       ...prevValues,
-      departmentIds: option,
+      department: option,
     }));
   };
   // const createUser = async (data: any) => {
@@ -688,12 +703,12 @@ function AddAdmin() {
                     <Dropdown
                       submitRef={true}
                       multiple={true}
-                      defaultValue={formData?.departmentIds || null}
+                      defaultValue={formData?.department || null}
                       options={deptOptions}
                       handleChange={handleDropdownChange}
-                      errorMessage={formErrors?.departmentIds}
+                      errorMessage={formErrors?.department}
                       requiredField={
-                        requiredInputFields?.ldepartmentIds || false
+                        requiredInputFields?.ldepartment || false
                       }
                       defaultLabel="Choose Departments"
                       label=""
