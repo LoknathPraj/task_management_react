@@ -25,18 +25,40 @@ interface AppProviderProps {
 
 function AppProvider({ children }: AppProviderProps) {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null); 
 
-  if (userDetails) {
-    localStorage.setItem("userDetails", JSON.stringify(userDetails));
-  }
+  const saveUserDetailsToLocalStorage = (userDetails: UserDetails | null) => {
+    if (userDetails) {
+      localStorage.setItem("userDetails", JSON.stringify(userDetails));
+    }
+  };
 
   useEffect(() => {
-    onPageLoad();
+    const storedUserDetails = localStorage.getItem("userDetails");
+    if (storedUserDetails) {
+      setUserDetails(JSON.parse(storedUserDetails));
+    }
+
+    const resetTimer = () => {
+  
+    };
+
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keypress", resetTimer);
+
+ 
+    return () => {
+      window.removeEventListener("mousemove", resetTimer);
+      window.removeEventListener("keypress", resetTimer);
+      clearTimeout(timer as NodeJS.Timeout);
+    };
   }, []);
 
-  const onPageLoad = async () => {
-    setUserDetails(JSON.parse(localStorage.getItem("userDetails") || "null"));
-  };
+  useEffect(() => {
+    if (userDetails) {
+      saveUserDetailsToLocalStorage(userDetails);
+    }
+  }, [userDetails]);
 
   return (
     <AppContext.Provider value={{ userDetails, setUserDetails }}>

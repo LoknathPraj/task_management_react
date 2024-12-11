@@ -2,18 +2,10 @@ import { Autocomplete, Button, TextField, Tooltip } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { useNavigate } from "react-router-dom";
-import AddToPhotosIcon from "@mui/icons-material/AddToPhotos";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import Modal from "../components/Modal";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import { designationOptions } from "../utils/index";
-import {
-  faCheck,
-  faTimes,
-  faInfoCircle,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { showNotification } from "../components/Toast";
 import Dropdown from "../components/Dropdown";
 
@@ -27,50 +19,48 @@ function AddAdmin() {
   const [pwd, setPwd] = useState("");
   const [matchPwd, setMatchPwd] = useState("");
   const [validPwd, setValidPwd] = useState(true);
-  // const [pwdFocus, setPwdFocus] = useState(false);
-  // const [matchFocus, setMatchFocus] = useState(false);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
   const [loading, setLoading] = useState<any>(false);
-  // const [departmentOptions, setDepartmentOptions] = useState<any>()
   const [departmentData, setDepartmentData] = useState<any>();
+  const [editState, setEditState] = useState<boolean>(false);
 
   const columns: any[] = [
     {
       field: "s_no",
       headerName: "S. No",
-      width: 150,
+      width: 80,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "name",
       headerName: "Name",
-      width: 150,
+      width: 200,
       headerClassName: "super-app-theme--header",
     },
 
     {
       field: "designation",
       headerName: "Designation",
-      width: 200,
+      width: 150,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "department",
       headerName: "Departments",
-      width: 200,
+      width: 250,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "email",
       headerName: "E-Mail",
-      width: 200,
+      width: 250,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "joiningDate",
       headerName: "Joining Date",
-      width: 200,
+      width: 150,
       headerClassName: "super-app-theme--header",
     },
   ];
@@ -129,9 +119,15 @@ function AddAdmin() {
     value: item?.id,
     label: item?.name,
   }));
+  const resetStates = () => {
+    setFormErrors({});
+    setFormData(null);
+    setMatchPwd("");
+    setEditState(false);
+  };
 
- 
   const adminList = userList?.filter((item: any) => item?.role === 10001);
+  
   
 
   useEffect(() => {
@@ -143,16 +139,18 @@ function AddAdmin() {
         designation: designationOptions?.find(
           (item: any) => item.value == user?.designationId
         )?.label,
-        department: user.department.map((departmentId:any) => 
-          deptOptions?.find(
-            (item: { value: string; label: string }) => item.value === departmentId
-          )?.label 
+        department: user.department.map(
+          (departmentId: any) =>
+            deptOptions?.find(
+              (item: { value: string; label: string }) =>
+                item.value === departmentId
+            )?.label
         ),
         joiningDate: formatDate(user?.joiningDate),
       }));
       setRows(formattedRows);
+  
     }
-    
   }, [userList]);
   const formatDate = (dateString: any) => {
     const date = new Date(dateString);
@@ -167,12 +165,11 @@ function AddAdmin() {
     joiningDate: true,
     email: true,
     mobile: true,
-    password: true,
+    password: editState ? false : true,
     // deptId: true,
     designationId: true,
   };
 
-  const handleChange = () => {};
   const formatLabel = (key: any) => {
     if (!key) return;
     return key
@@ -251,25 +248,25 @@ function AddAdmin() {
   };
 
   const handleEdit = (user: any) => {
-    showNotification("info", "Edit User");
+    setEditState(true);
     const userDetails = {
       ...user,
       joiningDate: formatDate(user?.joiningDate),
       designationId: designationOptions.find(
         (item: any) => item.value == user?.designationId
-      )?.label,
+      ),
       department: user?.department.map((departmentLabel: string) => {
-        // Find the option where the label matches the department label
         const department = deptOptions.find(
-          (item: { label: string; value: string }) => item.label === departmentLabel
+          (item: { label: string; value: string }) =>
+            item?.label === departmentLabel
+              ? { label: item.label, value: item.value }
+              : null
         );
-        return department ? department.value : "Unknown ID"; // Fallback for unmatched labels
-      })
+        return department;
+      }),
     };
     setFormData(userDetails);
     setIsModalOpen(true);
-
-    
   };
 
   const deleteUserById = async (id: any) => {
@@ -277,11 +274,12 @@ function AddAdmin() {
       const response = await axiosHandler.get(`auth/deleteUserById/${id}`);
       if (response) {
         setLoading(false);
-        showNotification("success", "Admin deleted successfully!")
+        showNotification("success", "Admin deleted successfully!");
       }
       getUserDetails();
     } catch (error: any) {
       setLoading(false);
+      showNotification("error", "Something went wrong");
     }
   };
   const handleDelete = (_id: string) => {
@@ -311,8 +309,6 @@ function AddAdmin() {
     }));
   };
   const handleDropdownChange = (option: any) => {
- 
-
     setFormData((prevValues: any) => ({
       ...prevValues,
       department: option,
@@ -341,10 +337,11 @@ function AddAdmin() {
       });
       if (response) {
         setLoading(false);
-        showNotification("success", "Admin created successfully!")
+        showNotification("success", "Admin created successfully!");
       }
     } catch (error) {
       setLoading(false);
+      showNotification("error", "Something went wrong");
     }
   };
   const updateUser = async (data: any, id: any) => {
@@ -362,9 +359,11 @@ function AddAdmin() {
       if (response) {
         getUserDetails();
         setLoading(false);
+        showNotification("success", "Admin updated successfully!");
       }
     } catch (error) {
       setLoading(false);
+      showNotification("error", "Something went wrong");
     }
   };
 
@@ -378,23 +377,24 @@ function AddAdmin() {
   };
   const handleSubmit = async () => {
     if (validateForm()) {
+      setEditState(false);
       setLoading(true);
       const userData: any = {
         ...formData,
         designationId: Number(formData?.designationId?.value),
-        departmentIds: formData?.departmentIds?.map((item:any)=>item?.value),
+        departmentIds: formData?.department?.map((item: any) => item?.value),
         password: matchPwd,
         role: 10001,
       };
-
+     
       if (userData?.id) {
         await updateUser(userData, userData?.id);
       } else {
         await createUser(userData);
       }
+      setLoading(false)
       setIsModalOpen(!isModalOpen);
-      setFormData({});
-      setMatchPwd("");
+      resetStates();
       getUserDetails();
     }
   };
@@ -411,9 +411,10 @@ function AddAdmin() {
           rowData={rows}
           onClickAdd={() => {
             setIsModalOpen(true);
+            resetStates();
           }}
           columnData={columns}
-          toolTipName={"Create User"}
+          toolTipName={"Create Admin"}
         />
       </div>
       {isModalOpen && (
@@ -422,7 +423,7 @@ function AddAdmin() {
           customFooter={true}
           //modalSize=""
           //modalHeight=""
-          modalHeader={"Create Admin"}
+          modalHeader={editState ? "Update Admin" : "Create Admin"}
           modalBody={
             <div>
               <div className="relative mt-5 mb-3">
@@ -507,6 +508,7 @@ function AddAdmin() {
                   </div>
                   <div className=" mb-6">
                     <TextField
+                    disabled={editState ? true : false}
                       className="w-80"
                       label="Joining Date"
                       type="date"
@@ -532,6 +534,7 @@ function AddAdmin() {
                   </div>
                   <div className=" mb-6">
                     <TextField
+                    disabled={editState}
                       className="w-80"
                       label="E-Mail"
                       type="email"
@@ -557,6 +560,7 @@ function AddAdmin() {
                   <div className=" mb-6">
                     <TextField
                       className="w-80"
+                      disabled={editState}
                       label="Employee ID"
                       name="empId"
                       required={requiredInputFields.empId}
@@ -699,7 +703,6 @@ function AddAdmin() {
                   </div>
 
                   <div className="">
-            
                     <Dropdown
                       submitRef={true}
                       multiple={true}
@@ -707,9 +710,7 @@ function AddAdmin() {
                       options={deptOptions}
                       handleChange={handleDropdownChange}
                       errorMessage={formErrors?.department}
-                      requiredField={
-                        requiredInputFields?.ldepartment || false
-                      }
+                      requiredField={requiredInputFields?.ldepartment || false}
                       defaultLabel="Choose Departments"
                       label=""
                       className="h-[39px]"
@@ -722,7 +723,7 @@ function AddAdmin() {
               </div>
             </div>
           }
-          positiveButtonTitle={"Create"}
+          positiveButtonTitle={editState ? "Update" : "Create"}
           onClickButton={onClickButton}
         />
       )}

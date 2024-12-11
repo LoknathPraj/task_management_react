@@ -16,6 +16,7 @@ function Department() {
   const [departmentList, setDepartmentList] = useState<any>();
   const [formData, setFormData] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>();
+  const [editIsClicked, setEditIsClicked] = useState(false)
 
   const columns: any[] = [
     {
@@ -27,7 +28,7 @@ function Department() {
     {
       field: "name",
       headerName: "Name",
-      width: 150,
+      width: 300,
       headerClassName: "super-app-theme--header",
     },
     // {
@@ -40,7 +41,7 @@ function Department() {
     {
       field: "createdAt",
       headerName: "Created Date",
-      width: 200,
+      width: 300,
       headerClassName: "super-app-theme--header", 
     },
   ];
@@ -138,6 +139,7 @@ function Department() {
     };
     setFormData(userDetails);
     setIsModalOpen(true);
+    setEditIsClicked(true);
   };
 
   const deleteDeptById = async (id: any) => {
@@ -205,6 +207,8 @@ function Department() {
   //   }
   // };
 
+
+
   const onClickButton = (type: string) => {
     if (type) {
       handleSubmit();
@@ -215,14 +219,13 @@ function Department() {
   };
   const handleSubmit = async () => {
     if (true) {
-    
       const userData: any = {
         ...formData,
         isActive: formData?.isActive==="true"?true : false,
       };
 
-      if (userData?.id) {
-        // await updateUser(userData, userData?.id);
+      if (editIsClicked) {
+      
       } else {
         await createDept(userData);
       }
@@ -248,7 +251,7 @@ function Department() {
       <div className="m-5 h-10">
         <GridTable
           onClickAction={onClickAction}
-          actions={["DELETE", "EDIT"]}
+          actions={["DELETE"]}
           rowData={rows}
           onClickAdd={() => {
             setIsModalOpen(true);

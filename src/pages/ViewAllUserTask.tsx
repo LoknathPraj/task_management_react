@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
-import { departmentOptions } from "src/utils";
 import useAxios from "../context/useAxios";
 
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
@@ -106,19 +105,21 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   }, []);
 
   const departments = appState?.userDetails?.user?.department;
+  
 
   const deptOptions = departments
     ?.map((deptId: string) => {
       const department = departmentData?.find(
         (dept: Department) => dept.id === deptId
       );
+      
 
       return department
         ? { value: department.id, label: department.name }
         : null;
     })
     .filter(Boolean);
-  
+    
   const getTask = async () => {
     const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
     let headersList = {
@@ -159,6 +160,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   };
 
   const BASE_URL = "http://localhost:8080/api/";
+
   const downloadExcel = async () => {
     const url = `${BASE_URL}worklog/downloadExcel`;
     window.location.href = url;

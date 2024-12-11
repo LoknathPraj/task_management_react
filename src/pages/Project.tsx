@@ -29,6 +29,7 @@ function Project() {
   const [departmentData, setDepartmentData] = useState<
   Department[] | undefined
 >();
+const [editIsClicked, setEditIsClicked] = useState(false)
 
   const columns: any[] = [
     {
@@ -40,6 +41,12 @@ function Project() {
     {
       field: "name",
       headerName: "Name",
+      width: 150,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "department",
+      headerName: "Department",
       width: 150,
       headerClassName: "super-app-theme--header",
     },
@@ -73,8 +80,11 @@ function Project() {
     if (Array.isArray(projectList)) {
       const formattedRows = projectList.map((dept: any, index: number) => ({
         ...dept,
-        id: dept?._id,
+        
         s_no: index + 1,
+        department: deptOptions.find(
+          (item: { value:any}) => item.value === dept?.department
+        )?.label,
         createdAt: formatDate(dept?.createdAt),
       }));
 
@@ -98,6 +108,7 @@ function Project() {
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (str: any) => str.toUpperCase());
   };
+  
   const validateForm = () => {
     const validationErrors: any = {};
     Object.keys(requiredInputFields).forEach((key) => {
@@ -141,13 +152,21 @@ function Project() {
     }
     return obj;
   };
-
+  const resetStates = () => {
+    setFormErrors({});
+    setFormData({});
+    setEditIsClicked(false);
+  };
   const handleEdit = (user: any) => {
-    showNotification("info", "Edit User");
+    
+    
+
+    setEditIsClicked(true)
     const userDetails = {
       ...user,
-      joiningDate: formatDate(user?.joiningDate), 
-      
+      department: deptOptions.find(
+        (item: { label: string; value: string }) => item.label === user?.department
+      )
     };
     setFormData(userDetails);
     setIsModalOpen(true);
@@ -195,6 +214,7 @@ function Project() {
   }, []);
 
   const departments = appState?.userDetails?.user?.department;
+  
 
   const deptOptions = departments
     ?.map((deptId: string) => {
@@ -207,6 +227,7 @@ function Project() {
         : null;
     })
     .filter(Boolean);
+    
 
   const createProject = async (data: any) => {
     const url = `http://localhost:8080/api/project/`;
@@ -261,7 +282,7 @@ function Project() {
 
       };
 
-      console.log(userData, "2222222222222222222222222222222222222")
+      
 
       if (userData?.id) {
         // await updateUser(userData, userData?.id);
@@ -271,6 +292,7 @@ function Project() {
       setIsModalOpen(!isModalOpen);
       setFormData({});
       getAllProjects();
+      resetStates();
     }
   };
 
@@ -287,6 +309,12 @@ function Project() {
       deptId: option,
     }));
   };
+ const department = deptOptions.find(
+    (item: { label: string; value: string }) => item.value === projectList?.department
+  )?.label 
+  
+
+  
   return (
     <>
       <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
@@ -295,10 +323,11 @@ function Project() {
       <div className="m-5 h-10">
         <GridTable
           onClickAction={onClickAction}
-          actions={["DELETE", "EDIT"]}
+          actions={["DELETE"]}
           rowData={rows}
           onClickAdd={() => {
             setIsModalOpen(true);
+            resetStates();
           }}
           columnData={columns}
           toolTipName={"Create Project"}
@@ -319,7 +348,7 @@ function Project() {
                     <Autocomplete
                       className="w-80"
                       options={deptOptions}
-                      value={formData?.deptId}
+                      value={formData?.department}
                       onChange={handleDepartmentChange}
                       sx={{
                         ".MuiInputBase-root": {
@@ -330,7 +359,7 @@ function Project() {
                         <TextField
                           {...params}
                           label="Department"
-                          name="deptId"
+                          name="department"
                           required={requiredInputFields.deptId}
                           InputLabelProps={{
                             sx: {

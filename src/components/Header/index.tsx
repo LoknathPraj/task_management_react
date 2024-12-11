@@ -32,14 +32,16 @@ const Header = (props: {
               <IoReorderThreeOutline className="w-8 h-8" />
             </button>
 
-            <Link className="block flex-shrink-0 lg:hidden" to="/">
+            <Link className="block flex-shrink-0 sm:hidden " to="/">
               <img src={"/images/amp.png"} alt="Logo" />
             </Link>
           </div>
           <div>
-            <span className="lg:text-title-sm text-title-xsm font-semibold text-primary dark:text-white">
-              {title}
-            </span>
+          <img
+            src={"/timesheet-heading.png"}
+            alt="Logo"
+            className="w-[180px] bg-whites p-0 lg:align-middle mx-auto"
+          />
           </div>
         </div>
 

@@ -10,7 +10,7 @@ const DropdownUser = () => {
   const userData = JSON.parse(localStorage.getItem("userDetails") || "{}");
 
   const context = useContext(AppContext);
-  console.log(context);
+  
   if (!context) {
     throw new Error("YourComponent must be used within an AppProvider");
   }
@@ -119,7 +119,7 @@ const DropdownUser = () => {
             </Link>
           </li>
 
-          <li>
+          {/* <li>
             <Link
               to="/settings"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
@@ -143,7 +143,7 @@ const DropdownUser = () => {
               </svg>
               Account Settings
             </Link>
-          </li>
+          </li> */}
         </ul>
         <button
           onClick={() => {

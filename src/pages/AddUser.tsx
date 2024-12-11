@@ -7,7 +7,7 @@ import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import Modal from "../components/Modal";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
-import { departmentOptions, designationOptions } from "../utils/index";
+import {designationOptions } from "../utils/index";
 import {
   faCheck,
   faTimes,
@@ -34,25 +34,26 @@ function AddUser() {
   const [formErrors, setFormErrors] = useState<any>();
   const [loading, setLoading] = useState<any>(false)
   const [departmentData, setDepartmentData] = useState<any>();
+  const [editState, setEditState] = useState<boolean>(false);
 
   const columns: any[] = [
     {
       field: "s_no",
       headerName: "S. No",
-      width: 150,
+      width: 80,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "name",
       headerName: "Name",
-      width: 150,
+      width: 200,
       headerClassName: "super-app-theme--header",
     },
 
     {
       field: "designation",
       headerName: "Designation",
-      width: 200,
+      width: 150,
       headerClassName: "super-app-theme--header",
     },
     {
@@ -64,13 +65,13 @@ function AddUser() {
     {
       field: "email",
       headerName: "E-Mail",
-      width: 200,
+      width: 250,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "joiningDate",
       headerName: "Joining Date",
-      width: 200,
+      width: 150,
       headerClassName: "super-app-theme--header",
     },
   ];
@@ -100,6 +101,7 @@ function AddUser() {
     const match = pwd === matchPwd;
     setValidMatch(match);
   }, [pwd, matchPwd]);
+
   const getAllDept = async () => {
     try {
       const response = await axiosHandler.post(`department/getDepartmentbyIds`);
@@ -110,20 +112,16 @@ function AddUser() {
   useEffect(() => {
     getAllDept();
   }, []);
+  
 
 
   const deptOptions = departmentData?.map((item: any) => ({
-
+   
     value: item?.id,
     label: item?.name,
   }));
-  const deptcheck =  userList?.department?.map((departmentId:any) => 
-    deptOptions?.find(
-      (item: { value: string; label: string }) => item.value === departmentId
-    )?.label )
+  
 
-
- 
   
   
 
@@ -140,6 +138,7 @@ function AddUser() {
     getUserDetails();
   }, []);
   const EmployeeList = userList?.filter((item: any) => item?.role === 10000);
+  
   useEffect(() => {
     if (Array.isArray(EmployeeList)) {
       const formattedRows = EmployeeList.map((user: any, index: number) => ({
@@ -173,8 +172,8 @@ function AddUser() {
     joiningDate: true,
     email: true,
     mobile: true,
-    password: true,
-    deptId: true,
+    password: editState ? false : true,
+   
     designationId: true,
   };
   const formatLabel = (key: any) => {
@@ -223,7 +222,7 @@ function AddUser() {
             }
           }
         } else if (value === null || value === undefined || value === "") {
-          if (key === "deptId") {
+          if (key === "department") {
             validationErrors[key] = `Department is required`;
           } else if (key === "designationId") {
             validationErrors[key] = `Designation is required`;
@@ -255,31 +254,54 @@ function AddUser() {
     return obj;
   };
 
+  const resetStates = () => {
+    setFormErrors({});
+    setFormData({});
+    setMatchPwd("");
+    setEditState(false);
+  };
+
   const handleEdit = (user: any) => {
-  
+    
+    setEditState(true);
     const userDetails = {
       ...user,
       joiningDate: formatDate(user?.joiningDate),
       designationId: designationOptions.find(
         (item: any) => item.value == user?.designationId
-      )?.label,
-      deptId: departmentOptions.find((item: any) => item.value == user?.deptId)
-        ?.label,
+      ),
+      department: user?.department.map((departmentLabel: string) => {
+        const department = deptOptions.find(
+          (item: { label: string; value: string }) =>
+            item?.label === departmentLabel
+              ? { label: item.label, value: item.value }
+              : null
+        );
+        return department?.label;
+      }),
     };
     setFormData(userDetails);
     setIsModalOpen(true);
   };
+  
+ 
 
   const deleteUserById = async (id: any) => {
     try {
       const response = await axiosHandler.get(`auth/deleteUserById/${id}`);
-
+      if (response) {
+        setLoading(false);
+        showNotification("success", "Admin deleted successfully!");
+      }
       getUserDetails();
-    } catch (error: any) {}
+    } catch (error: any) {setLoading(false);
+      showNotification("error", "Something went wrong");}
+    
   };
   const handleDelete = (_id: string) => {
+    setLoading(true);
     deleteUserById(_id);
-    showNotification("success", "User deleted succesfully!");
+    setLoading(false);
   };
 
   const onClickAction = (actionType: any, row: any, id: any) => {
@@ -305,7 +327,7 @@ function AddUser() {
   const handleDepartmentChange = (e: any, option: any) => {
     setFormData((prevValues: any) => ({
       ...prevValues,
-      deptId: option,
+      department: [option],
     }));
   };
   // const createUser = async (data: any) => {
@@ -317,6 +339,13 @@ function AddUser() {
 
   const appState: any = useContext(AppContext);
   
+  const assignedDepts = appState?.userDetails?.user?.department 
+  
+
+  const depts = assignedDepts?.map((deptId:any) => {
+    const matchedDept = deptOptions?.find((option:any) => option.value === deptId);
+    return matchedDept ? { value: matchedDept.value, label: matchedDept.label } : null;
+  }).filter(Boolean);
 
   const createUser = async (data: any) => {
     const url = `http://localhost:8080/api/auth/signup`;
@@ -337,6 +366,7 @@ function AddUser() {
   } catch(error){
     
     setLoading(false)
+    showNotification("error", "Something went wrong");
   }
   };
   const updateUser = async (data: any, id: any) => {
@@ -345,6 +375,7 @@ function AddUser() {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
+    try {
     const response = await fetch(url, {
       method: "POST",
       headers: headersList,
@@ -353,9 +384,16 @@ function AddUser() {
 
     if (response) {
       getUserDetails();
+      setLoading(false);
       showNotification("success", "User updated succesfully!");
     }
-  };
+
+  }
+ catch (error) {
+  setLoading(false);
+  showNotification("error", "Something went wrong");
+}
+};
 
   const onClickButton = (type: string) => {
     if (type) {
@@ -367,11 +405,12 @@ function AddUser() {
   };
   const handleSubmit = async () => {
     if (validateForm()) {
+      setEditState(false);
       setLoading(true)
       const userData: any = {
         ...formData,
         designationId: Number(formData?.designationId?.value),
-        department: Number(formData?.deptId?.value),
+        departmentIds: formData?.department?.map((item:any)=>item?.value),
         password: matchPwd,
         role: 10000,
       };
@@ -383,8 +422,7 @@ function AddUser() {
       }
       setLoading(false)
       setIsModalOpen(!isModalOpen);
-      setFormData({});
-      setMatchPwd("");
+   resetStates();
       getUserDetails();
     }
   };
@@ -401,6 +439,7 @@ function AddUser() {
           rowData={rows}
           onClickAdd={() => {
             setIsModalOpen(true);
+            resetStates();
           }}
           columnData={columns}
           toolTipName={"Create User"}
@@ -412,7 +451,7 @@ function AddUser() {
           customFooter={true}
           //modalSize=""
           //modalHeight=""
-          modalHeader={"Create User"}
+          modalHeader={editState ? "Update User" : "Create User"}
           modalBody={
             <div>
               <div className="relative mt-5 mb-3">
@@ -498,6 +537,7 @@ function AddUser() {
                   <div className=" mb-6">
                     <TextField
                       className="w-80"
+                      disabled={editState ? true : false}
                       label="Joining Date"
                       type="date"
                       required={requiredInputFields.joiningDate}
@@ -524,6 +564,7 @@ function AddUser() {
                     <TextField
                       className="w-80"
                       label="E-Mail"
+                      disabled={editState}
                       type="email"
                       name="email"
                       required={requiredInputFields.email}
@@ -547,8 +588,8 @@ function AddUser() {
                   <div className="mb-6">
                     <Autocomplete
                       className="w-80"
-                      options={deptOptions}
-                      value={formData?.deptId}
+                      options={depts}
+                      value={formData?.department}
                       onChange={handleDepartmentChange}
                       sx={{
                         ".MuiInputBase-root": {
@@ -559,8 +600,8 @@ function AddUser() {
                         <TextField
                           {...params}
                           label="Department"
-                          name="deptId"
-                          required={requiredInputFields.deptId}
+                          name="department"
+                          required={requiredInputFields.department}
                           InputLabelProps={{
                             sx: {
                               marginTop: "-8px",
@@ -570,7 +611,7 @@ function AddUser() {
                       )}
                     />
                     <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.deptId || ""}
+                      {formErrors?.department || ""}
                     </div>
                   </div>
                   <div className=" mb-6 relative">
@@ -694,6 +735,7 @@ function AddUser() {
                     <TextField
                       className="w-80"
                       label="Employee ID"
+                      disabled={editState}
                       name="empId"
                       required={requiredInputFields.empId}
                       error={formErrors?.empId || ""}
@@ -719,7 +761,7 @@ function AddUser() {
               </div>
             </div>
           }
-          positiveButtonTitle={"Create"}
+          positiveButtonTitle={editState ? "Update" : "Create"}
           onClickButton={onClickButton}
         />
       )}

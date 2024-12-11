@@ -1,10 +1,3 @@
-export const departmentOptions = [
-  { value: "1", label: "IT" },
-  { value: "2", label: "Development" },
-  { value: "3", label: "Accounts" },
-  { value: "4", label: "HR" },
-  { value: "5", label: "Recruitment" },
-];
 export const designationOptions = [
   { value: "1", label: "Manager" },
   { value: "2", label: "Team Lead" },
