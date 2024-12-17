@@ -133,11 +133,12 @@ export default function AddTask() {
         const data = await response?.json();
         resetForm();
         setNewInsertedData({ data: data?.worklog, isInserted: false });
+        showNotification("success", "Task Updated Successfully!")
       } else {
-        alert("Found duplicate task");
+        showNotification("error", "Something went wrong")
       }
     } catch (err) {
-      alert("Something went wrong");
+      showNotification("error", "Something went wrong")
     }
   }
 

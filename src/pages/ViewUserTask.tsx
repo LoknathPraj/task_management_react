@@ -3,6 +3,7 @@ import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
+import { showNotification } from "../components/Toast";
 
 export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
   interface ProjectType {
@@ -118,6 +119,7 @@ const getAllProjects = async () => {
     if (response?.status === 200) {
       const lRow = rows.filter((e) => e._id !== taskId);
       setRows(lRow);
+      showNotification("success", "Task Deleted Successfully!")
     }
   };
 
