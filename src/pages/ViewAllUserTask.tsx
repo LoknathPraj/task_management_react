@@ -75,6 +75,8 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   }, [insertedRecord]);
 
+  
+
   useEffect(() => {
     getTask();
   }, []);
@@ -161,10 +163,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
   const BASE_URL = "http://localhost:8080/api/";
 
-  const downloadExcel = async () => {
-    const url = `${BASE_URL}worklog/downloadExcel`;
-    window.location.href = url;
-  };
+
 
   const onClickAction = (value: any, row?: any, _id?: any) => {
     if (value === "DELETE") {
@@ -272,9 +271,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
   return (
     <div>
-      <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
-        Tasks
-      </h1>
+    
       <div className="w-full items-end"></div>
       <div className="m-5">
         <GridTable
@@ -283,10 +280,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           // actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
-          toolTipName={"Create Team"}
           filterDropdownData={userList}
-          onClickFilter={(id) => getTaskByUserId(id)}
-          onClickExport={() => downloadExcel}
           onClickDropdown={handleDropdownChangeInGridTable}
           selectedValue={selectedValueInDropdown}
           dropdownLabel={"Departments"}

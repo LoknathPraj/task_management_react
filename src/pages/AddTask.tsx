@@ -3,6 +3,8 @@ import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import moment from "moment";
 import ViewUserTask from "./ViewUserTask";
+import useAxios from "../context/useAxios";
+import { showNotification } from "../components/Toast";
 export default function AddTask() {
   const appState: any = useContext(AppContext);
   const [project, setProject] = useState("");
@@ -14,6 +16,7 @@ export default function AddTask() {
   const [location, setLocation] = useState("");
   const [newInsertedData, setNewInsertedData] = useState<any>(null);
   const [workId, setWorkId] = useState<any>("");
+  const [projectData, setProjectData] = useState<any>();
 
   const resetForm = () => {
     setProject("");
@@ -25,6 +28,21 @@ export default function AddTask() {
     setLocation("");
     setWorkId("");
   };
+  const axiosHandler = useAxios();
+
+   const getAllProjects = async () => {
+      try {
+        const response = await axiosHandler.get(`project/${appState?.userDetails?.user?.department?.[0]}`);
+        const data = response?.data?.data;
+        setProjectData(data);
+      } catch (error: any) {}
+    };
+    useEffect(() => {
+      getAllProjects();
+    }, []);
+
+    
+   
 
   const getMinutes = () => {
     const mins = [];
@@ -39,7 +57,8 @@ export default function AddTask() {
     event.preventDefault();
     const param = {
       _id: workId,
-      project_name: project,
+      projectId: project,
+      project_name: projectData?.find((project2:any)=> project2.id === project)?.name ,
       task_type: taskType,
       working_date: workingDate,
       working_hrs: workingHrs,
@@ -47,7 +66,7 @@ export default function AddTask() {
       location,
       task_description: description,
       username: appState?.userDetails?.user?.name,
-      departmentId: appState?.userDetails?.user?.departmentId,
+      departmentId: appState?.userDetails?.user?.department,
     };
     if (checkEmptyData()) return;
     if (workId) {
@@ -56,6 +75,8 @@ export default function AddTask() {
       addTask(param);
     }
   };
+  
+
   const checkEmptyData = () => {
     if (
       project &&
@@ -85,13 +106,16 @@ export default function AddTask() {
         const data = await response?.json();
         resetForm();
         setNewInsertedData({ data: data?.data, isInserted: true });
+        showNotification("success", "Task Added Successfully!")
       } else {
-        alert("Found duplicate task");
+        showNotification("error", "Something went wrong")
       }
     } catch (err) {
-      alert("Something went wrong");
+
+      showNotification("error", "Something went wrong")
     }
   }
+  
 
   async function updateTask(payload: any) {
     try {
@@ -119,7 +143,8 @@ export default function AddTask() {
 
   const onUpdate = (row: any) => {
     const {
-      project_name,
+   
+      projectId,
       task_type,
       working_date,
       working_hrs,
@@ -128,7 +153,7 @@ export default function AddTask() {
       task_description,
       _id,
     } = row;
-    setProject(project_name);
+    setProject(projectId);
     setWorkingHrs(working_hrs);
     setTaskType(task_type);
     setWorkingMinutes(working_mins);
@@ -136,6 +161,8 @@ export default function AddTask() {
     setWorkingDate(working_date);
     setLocation(location);
     setWorkId(_id);
+    
+    
   };
   return (
     <div>
@@ -145,35 +172,19 @@ export default function AddTask() {
           <div className="w-full mb-2 ">
             <label className="text-left">Projects</label>
             <select
-              required
-              value={project}
-              onChange={(e) => setProject(e.target.value)}
-              style={{ borderWidth: 1 }}
-              className="border-1 border-gray-400 w-full h-8 rounded"
-            >
-              <option value={""}>Select Projects</option>
-              <option value={"FHUP"}>FHUP</option>
-              <option value={"LSR"}>LSR</option>
-              <option value={"LetterLinks"}>Letter Links</option>
-              <option value={"CorforKindergaten"}>Cor for Kindergaten</option>
-              <option value={"ClassroomCoach"}>Classroom Coach</option>
-              <option value={"CorAdvantage"}>CorAdvantage</option>
-              <option value={"Curriculum"}>Curriculum</option>
-              <option value={"LearningManagementSystem"}>
-                Learning Management System
-              </option>
-              <option value={"PQA"}>PQA</option>
-              <option value={"ReadySchoolAssessment"}>
-                ReadySchoolAssessment
-              </option>
-              <option value={"TPRM"}>TPRM</option>
-              <option value={"PW Water"}>PW Water Mobile</option>
-              <option value={"Acquaa Mobile"}>Acquaa Mobile</option>
-              <option value={"Helpdesk"}>Helpdesk</option>
-              <option value={"Onboarding"}>Onboarding</option>
-              <option value={"HRMS"}>HRMS</option>
-              <option value={"Others"}>Others</option>
-            </select>
+      required
+      value={project}
+      onChange={(e) => {setProject(e.target.value);}}
+      style={{ borderWidth: 1 }}
+      className="border-1 border-gray-400 w-full h-8 rounded"
+    >
+      <option value="">Select Projects</option>
+      {projectData?.map((option:any) => (
+        <option key={option.id} label={option.name}  value={option.id}>
+          {option.name}
+        </option>
+      ))}
+    </select>
           </div>
 
           <div>

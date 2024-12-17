@@ -401,9 +401,6 @@ function AddAdmin() {
 
   return (
     <>
-      <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
-        Admins
-      </h1>
       <div className="m-5 h-10">
         <GridTable
           onClickAction={onClickAction}
@@ -706,6 +703,7 @@ function AddAdmin() {
                     <Dropdown
                       submitRef={true}
                       multiple={true}
+                      disabled={editState}
                       defaultValue={formData?.department || null}
                       options={deptOptions}
                       handleChange={handleDropdownChange}

@@ -17,9 +17,6 @@ import Project from "./pages/Project";
 export default function App() {
   const appState: any = useContext(AppContext);
 
-  console.log(appState);
-
-  
 
   return (
     <BrowserRouter>
@@ -42,7 +39,6 @@ export default function App() {
       ) : appState?.userDetails?.user?.role === 10000 ? (
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/user-profile" element={<UserProfile />} />
             <Route path="/add-task" element={<AddTask />} />
             <Route path="*" element={<NoPage />} />
@@ -51,7 +47,6 @@ export default function App() {
       ) : appState?.userDetails?.user?.role === 10002 ? (
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/add-admin" element={<AddAdmin />} />
             <Route path="/department" element={<Department />} />
             <Route path="/user-profile" element={<UserProfile />} />

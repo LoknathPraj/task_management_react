@@ -274,7 +274,7 @@ function AddUser() {
         const department = deptOptions.find(
           (item: { label: string; value: string }) =>
             item?.label === departmentLabel
-              ? { label: item.label, value: item.value }
+              ? { label: item.label}
               : null
         );
         return department?.label;
@@ -429,9 +429,6 @@ function AddUser() {
 
   return (
     <>
-      <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
-        Users
-      </h1>
       <div className="m-5 h-10">
         <GridTable
           onClickAction={onClickAction}
@@ -537,7 +534,7 @@ function AddUser() {
                   <div className=" mb-6">
                     <TextField
                       className="w-80"
-                      disabled={editState ? true : false}
+                      disabled={editState}
                       label="Joining Date"
                       type="date"
                       required={requiredInputFields.joiningDate}
@@ -589,6 +586,7 @@ function AddUser() {
                     <Autocomplete
                       className="w-80"
                       options={depts}
+                      disabled={editState}
                       value={formData?.department}
                       onChange={handleDepartmentChange}
                       sx={{

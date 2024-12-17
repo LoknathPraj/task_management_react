@@ -245,9 +245,6 @@ function Department() {
 
   return (
     <>
-      <h1 className="py-2 w-[96%] rounded-sm mb-8 mx-auto bg-blue-700 text-white text-center text-2xl">
-        Departments
-      </h1>
       <div className="m-5 h-10">
         <GridTable
           onClickAction={onClickAction}

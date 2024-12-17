@@ -10,3 +10,9 @@ export const Endpoint = {
   getUserList: "worklog/getUserList",
   filterWorkLogByUserId: "worklog/filterWorkLogByUserId",
 };
+
+// Roles = {
+//   Super Admin: 10002
+//   Admin: 10001,
+//   User: 10000,
+// }

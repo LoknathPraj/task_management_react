@@ -2,9 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
+import useAxios from "../context/useAxios";
 
 export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
+  interface ProjectType {
+    id: string | number; // Adjust the type based on your data
+    name: string;
+  }
+
   const [rows, setRows] = useState<Array<any>>([]);
+  const [projectList, setProjectList] = useState<ProjectType[]>([]);
   const appState: any = useContext(AppContext);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
@@ -28,6 +35,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
   //     };
   //     // setRows([obj])
   //   }, []);
+  const axiosHandler = useAxios();
 
   useEffect(() => {
     if (insertedRecord) {
@@ -53,6 +61,22 @@ export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
       }
     }
   }, [insertedRecord]);
+  
+  
+
+
+const getAllProjects = async () => {
+      try {
+        const response = await axiosHandler.get(`project/`);
+        const data = response?.data?.data;
+        setProjectList(data);
+      } catch (error: any) {}
+    };
+    useEffect(() => {
+      getAllProjects();
+    }, []);
+
+    
 
   useEffect(() => {
     getTaskById();
@@ -98,7 +122,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
   };
 
   const onClickAction = (value: any, row?: any, _id?: any) => {
-    console.log(row);
+    
 
     if (value === "DELETE") {
       deleteTaskById(row?._id);

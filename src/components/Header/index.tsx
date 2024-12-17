@@ -8,12 +8,17 @@ const Header = (props: {
   sidebarOpen: string | boolean | undefined;
   setSidebarOpen: (arg0: boolean) => void;
 }) => {
-  const [title, setTitle] = useState("");
   const location = useLocation();
-  useEffect(() => {
-    // document.title = title;
-    setTitle(document.title?.split("|")?.[1]);
-  }, [location, document.title]);
+
+  const formatPathToTitle = (pathname: string): string => {
+    return pathname
+      .replace(/^\//, '') 
+      .split('-') 
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) 
+      .join(' '); 
+  };
+
+  const title = formatPathToTitle(location.pathname);
 
   return (
     <header className="sticky top-0 z-999 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
@@ -36,13 +41,13 @@ const Header = (props: {
               <img src={"/images/amp.png"} alt="Logo" />
             </Link>
           </div>
-          <div>
-          <img
-            src={"/timesheet-heading.png"}
-            alt="Logo"
-            className="w-[180px] bg-whites p-0 lg:align-middle mx-auto"
-          />
-          </div>
+          
+             <div>
+                        <span className="lg:text-title-sm text-title-xsm font-semibold text-blue-700 dark:text-white">
+                            {title}
+                        </span>
+                    </div>
+      
         </div>
 
         <div className="flex items-center gap-3 2xsm:gap-7">

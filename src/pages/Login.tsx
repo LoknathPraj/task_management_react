@@ -2,11 +2,14 @@ import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { BASE_URL, Endpoint } from "../constant";
 import { useNavigate } from "react-router-dom";
+import { Oval } from "react-loader-spinner";
+import { showNotification } from "../components/Toast";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const appState: any = useContext(AppContext);
+ 
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -35,13 +38,15 @@ export default function Login() {
         setLoading(false);
         const data = await response?.json();
         appState.setUserDetails(data);
-        navigate("/dashboard");
+        navigate("/");
+        showNotification("success", "Succesfully Logged in!")
       } else {
         setLoading(false);
+        showNotification("error","Something went wrong");
       }
     } catch (err) {
       setLoading(false);
-      alert("Something went wrong");
+      showNotification("error","Something went wrong");
     }
   }
   return (
@@ -79,6 +84,15 @@ export default function Login() {
         </div>
 
         <div className="m-auto text-center mt-15 mb-10">
+        {loading  && (
+                  <Oval
+                    height={35}
+                    width={35}
+                    color={"#1f7fbb"}
+                    ariaLabel="loading"
+                    strokeWidth={3}
+                  />
+                )}
           <button
             disabled={loading}
             type="submit"
