@@ -60,16 +60,18 @@ function Dashboard() {
       const data = response?.data?.data;
   
       
-      const filteredData = data?.filter((user: any) => user.role === 10000);
   
-      setUserList(filteredData || []); 
+  
+      setUserList(data); 
     } catch (error: any) {
       
     }
   };
+  const filteredData = userList?.filter((user: any) => user.role === 10000);
+
   
 
-const userCount = userList?.length
+const userCount = (filteredData || [])?.length
 const countUniqueUsernames = (tasksToday:any) => {
   const uniqueUsernames = new Set(tasksToday?.map((worklog:any) => worklog?.username));
   return uniqueUsernames.size;
@@ -78,7 +80,7 @@ const uniqueCount = countUniqueUsernames(tasksToday);
 
 const generateCombinedArray=()=>{
   if(tasksToday){
-    const usersNotInTasks = userList?.filter((user:any) => 
+    const usersNotInTasks = (filteredData || [])?.filter((user:any) => 
       !tasksToday?.some((task:any) => task.userId === user.id)
     );
     
