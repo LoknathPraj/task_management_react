@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Autocomplete, Button, TextField } from "@mui/material";
+import { Autocomplete, Button, TextField, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddToPhotosIcon from "@mui/icons-material/AddToPhotos";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
@@ -14,6 +14,10 @@ import { TbChevronsDownLeft } from "react-icons/tb";
 import { NavLink } from "react-router-dom";
 import { showNotification } from "../Toast";
 import Password from "antd/es/input/Password";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 function UserProfile() {
   const [profileImage, setProfileImage] = useState(null);
@@ -444,7 +448,9 @@ function UserProfile() {
                   }}
                 />
               </div>
+              
               <div className=" mb-8">
+        
                 <TextField
                   className="w-80"
                   label="Confirm Password"
@@ -466,8 +472,21 @@ function UserProfile() {
                   }}
                 />
                { formErrors?.password ? <div className="text-[12px] mt-1 ml-1 text-red-600">
-                     Check Password again
+                <Tooltip
+                        placement="top"
+                        title={
+                          "Must include uppercase and lowercase letters, a number and a special character. Allowed special characters: !@#$%*"
+                        }
+                      >
+                        <span className="ml-1">
+                          <FontAwesomeIcon
+                            icon={faInfoCircle}
+                            className="text-blue-gray-700"
+                          />
+                        </span>
+                      </Tooltip>  Check Password again
                     </div> : <div></div>}
+                  
               </div>
             </div>
             <div className="absolute pb-9 right-20 space-x-4 ">
