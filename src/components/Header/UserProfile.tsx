@@ -207,11 +207,16 @@ function UserProfile() {
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
-    
+
+  
 
     setFormData((prevValues: any) => ({ ...prevValues, [name]: value }));
   };
-
+  const handleKeyDown = (event:any) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
   const handleDesignationChange = (e: any, option: any) => {
     setFormData((prevValues: any) => ({
       ...prevValues,
@@ -453,6 +458,7 @@ function UserProfile() {
                   className="w-80"
                   label="Confirm Password"
                    name="password"
+                   onKeyDown={handleKeyDown}
                   type="password"
                   value={matchPwd}
                   // onFocus={() => setMatchFocus(true)}
@@ -498,6 +504,7 @@ function UserProfile() {
                 onClick={handleSubmit}
                 variant="contained"
                 disabled={!checkPass}
+            
               >
                 Update
               </Button>

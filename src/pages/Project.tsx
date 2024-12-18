@@ -103,43 +103,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
   const requiredInputFields: any = {
     name: true,
   };
-  const formatLabel = (key: any) => {
-    if (!key) return;
-    return key
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str: any) => str.toUpperCase());
-  };
   
-  const validateForm = () => {
-    const validationErrors: any = {};
-    Object.keys(requiredInputFields).forEach((key) => {
-      const value = formData[key];
-
-      if (requiredInputFields[key]) {
-        if (typeof value === "string") {
-          const trimmedValue = value?.trim();
-          if (!trimmedValue) {
-            validationErrors[key] = `${formatLabel(key)} is required`;
-          }
-          if (trimmedValue && key === "email") {
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(trimmedValue.trim())) {
-              validationErrors[key] = "Invalid email format";
-            }
-          }
-          if (trimmedValue && key === "mobile") {
-            if (trimmedValue.length < 10 || trimmedValue.length > 10) {
-              validationErrors[key] = "Phone Number must have 10 Digits!";
-            }
-          }
-        }
-      }
-    });
-    setFormErrors(validationErrors);
-
-    return Object.keys(validationErrors).length === 0;
-  };
-
   const trimObjectValues: any = (obj: any) => {
     if (Array.isArray(obj)) {
       return obj.map(trimObjectValues);
@@ -297,13 +261,13 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     }
   };
 
-  const handleRadioChange = (value: string) => {
-    setFormData((prevValues: any) => ({
-      ...prevValues,
+  // const handleRadioChange = (value: string) => {
+  //   setFormData((prevValues: any) => ({
+  //     ...prevValues,
 
-      isActive: value,
-    }));
-  };
+  //     isActive: value,
+  //   }));
+  // };
   const handleDepartmentChange = (e: any, option: any) => {
     setFormData((prevValues: any) => ({
       ...prevValues,
@@ -314,7 +278,11 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     (item: { label: string; value: string }) => item.value === projectList?.department
   )?.label 
   
-
+  const handleKeyDown = (event:any) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
   
   return (
     <>
@@ -381,6 +349,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
                       error={formErrors?.name || ""}
                       value={formData?.name || ""}
                       type="text"
+                      onKeyDown={handleKeyDown}
                       onChange={handleInputChange}
                       InputLabelProps={{
                         sx: {

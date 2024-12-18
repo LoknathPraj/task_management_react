@@ -243,7 +243,11 @@ function Department() {
       isActive: value,
     }));
   };
-
+  const handleKeyDown = (event:any) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
   return (
     <>
       <div className="m-5 h-10">
@@ -277,6 +281,7 @@ function Department() {
                       required={requiredInputFields.name}
                       error={formErrors?.name || ""}
                       value={formData?.name || ""}
+                      onKeyDown={handleKeyDown}
                       type="text"
                       onChange={handleInputChange}
                       InputLabelProps={{

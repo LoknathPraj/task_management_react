@@ -404,6 +404,7 @@ function AddUser() {
       setFormErrors("");
     }
   };
+  
   const handleSubmit = async () => {
     if (validateForm()) {
       setEditState(false);
@@ -427,7 +428,11 @@ function AddUser() {
       getUserDetails();
     }
   };
-
+  const handleKeyDown = (event:any) => {
+    if (event.key === "Enter") {
+      handleSubmit();
+    }
+  };
   return (
     <>
       <div className="m-5 h-10">
@@ -736,6 +741,7 @@ function AddUser() {
                       label="Employee ID"
                       disabled={editState}
                       name="empId"
+                      onKeyDown={handleKeyDown}
                       required={requiredInputFields.empId}
                       error={formErrors?.empId || ""}
                       value={formData?.empId || ""}
