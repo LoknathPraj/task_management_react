@@ -73,6 +73,7 @@ export default function Login() {
           <label>Password</label>
           <input
             required
+            type="password"
             placeholder=""
             value={password}
             onChange={(e) => {

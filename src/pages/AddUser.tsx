@@ -666,9 +666,6 @@ function AddUser() {
                         },
                       }}
                     />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.password || ""}
-                    </div>
                   </div>
 
                   <div className=" mb-6">
@@ -729,6 +726,9 @@ function AddUser() {
                         },
                       }}
                     />
+                      { formErrors?.password ? <div className="text-[12px] mt-1 ml-1 text-red-600">
+                     Check Password again
+                    </div> : <div></div>}
                   </div>
                   <div className=" mb-6">
                     <TextField

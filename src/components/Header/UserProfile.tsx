@@ -13,6 +13,7 @@ import { designationOptions } from "../../utils/index";
 import { TbChevronsDownLeft } from "react-icons/tb";
 import { NavLink } from "react-router-dom";
 import { showNotification } from "../Toast";
+import Password from "antd/es/input/Password";
 
 function UserProfile() {
   const [profileImage, setProfileImage] = useState(null);
@@ -20,14 +21,21 @@ function UserProfile() {
   const [formData, setFormData] = useState<any>({});
   const [pwd, setPwd] = useState("");
   const [matchPwd, setMatchPwd] = useState("");
-  const [validPwd, setValidPwd] = useState(true);
+  const [validPwd, setValidPwd] = useState(false);
   const [userList, setUserList] = useState<any>();
   const [validMatch, setValidMatch] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<any>();
   const [departmentData, setDepartmentData] = useState<any>();
   const [loading, setLoading] = useState<any>(false)
 
   const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!*@#$%]).{8,24}$/;
+
+  const resetStates = () => {
+    setFormErrors({});
+    setFormData(null);
+    setMatchPwd("");
+    setPwd("")
+  };
 
   useEffect(() => {
     const result = PWD_REGEX.test(matchPwd);
@@ -87,6 +95,7 @@ function UserProfile() {
       getUserDetails();
       setLoading(false);
       showNotification("success", "User updated succesfully!");
+      
     }
 
   }
@@ -109,6 +118,7 @@ function UserProfile() {
     joiningDate: true,
     email: true,
     mobile: true,
+    password: matchPwd ? true : false
   };
 
   const formatLabel = (key: any) => {
@@ -126,14 +136,8 @@ function UserProfile() {
       if (requiredInputFields[key]) {
         if (typeof value === "string") {
           const trimmedValue = value?.trim();
-          if (!trimmedValue) {
-            validationErrors[key] = `${formatLabel(key)} is required`;
-          }
-          if (
-            (trimmedValue && key === "email") ||
-            key === "personalEmail" ||
-            key === "corporateEmail"
-          ) {
+        
+          if (trimmedValue && key === "email") {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailPattern.test(trimmedValue.trim())) {
               validationErrors[key] = "Invalid email format";
@@ -156,24 +160,33 @@ function UserProfile() {
           ) {
             validationErrors[key] = "Enter a valid Password";
           }
-          if (
-            trimmedValue &&
-            (key === "phoneNumber" || key === "contactNumber")
-          ) {
+          if (trimmedValue && key === "mobile") {
             if (trimmedValue.length < 10 || trimmedValue.length > 10) {
               validationErrors[key] = "Phone Number must have 10 Digits!";
             }
           }
+          if (!trimmedValue) {
+            validationErrors[key] = `${formatLabel(key)} is required`;
+          }
+
         } else if (value === null || value === undefined || value === "") {
-          validationErrors[key] = `${formatLabel(key)} is required`;
+          if (key === "department") {
+            validationErrors[key] = `Department is required`;
+          } else if (key === "designationId") {
+            validationErrors[key] = `Designation is required`;
+          } else if (key === "mobile") {
+            validationErrors[key] = `Phone Number is required`;
+          } else {
+            validationErrors[key] = `${formatLabel(key)} is required`;
+          }
         }
       }
     });
     setFormErrors(validationErrors);
+    
 
     return Object.keys(validationErrors).length === 0;
   };
-
   const trimObjectValues: any = (obj: any) => {
     if (Array.isArray(obj)) {
       return obj.map(trimObjectValues);
@@ -203,15 +216,15 @@ function UserProfile() {
   };
 
   const handleSubmit = async () => {
-    const userData: any = {
+   if(validateForm()) {const userData: any = {
       ...formData,
       designationId: Number(formData?.designationId?.value),
       deptId: Number(formData?.deptId?.value),
       password: matchPwd,
     };
     updateUser(userData, userData?.id);
-    setFormData({});
-    setMatchPwd("");
+    resetStates();
+  }
   };
 
   const appState: any = useContext(AppContext);
@@ -219,6 +232,8 @@ function UserProfile() {
   const userDetail = appState?.userDetails?.userId;
 
   const thisUser = userList?.find((user: any) => user?._id === userDetail);
+  
+
   
 
  
@@ -237,6 +252,8 @@ function UserProfile() {
     }
   }, [thisUser]);
 
+  const checkPass = pwd === matchPwd
+  
 
   return (
     <>
@@ -282,6 +299,9 @@ function UserProfile() {
                     },
                   }}
                 />
+                  <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.name || ""}
+                    </div>
               </div>
               <div className=" mb-8">
                 <TextField
@@ -302,6 +322,9 @@ function UserProfile() {
                     },
                   }}
                 />
+                <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.mobile || ""}
+                    </div>
               </div>
               <div className="mb-8">
                 <Autocomplete
@@ -319,6 +342,7 @@ function UserProfile() {
                       {...params}
                       label="Designation"
                       name="designationId"
+                      disabled={true}
                       InputLabelProps={{
                         sx: {
                           marginTop: "-8px",
@@ -327,6 +351,9 @@ function UserProfile() {
                     />
                   )}
                 />
+                 <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.designationId || ""}
+                    </div>
               </div>
               <div className=" mb-8">
                 <TextField
@@ -369,6 +396,9 @@ function UserProfile() {
                     },
                   }}
                 />
+                 <div className="text-[12px] mt-1 ml-1 text-red-600">
+                      {formErrors?.email || ""}
+                    </div>
               </div>
               {/* <div className="mb-8">
                 <Autocomplete
@@ -398,6 +428,7 @@ function UserProfile() {
                 <TextField
                   className="w-80"
                   label="Password"
+                  name="password"
                   type="password"
                   value={pwd}
                   onChange={(e) => setPwd(e.target.value)}
@@ -417,6 +448,7 @@ function UserProfile() {
                 <TextField
                   className="w-80"
                   label="Confirm Password"
+                   name="password"
                   type="password"
                   value={matchPwd}
                   // onFocus={() => setMatchFocus(true)}
@@ -433,6 +465,9 @@ function UserProfile() {
                     },
                   }}
                 />
+               { formErrors?.password ? <div className="text-[12px] mt-1 ml-1 text-red-600">
+                     Check Password again
+                    </div> : <div></div>}
               </div>
             </div>
             <div className="absolute pb-9 right-20 space-x-4 ">
@@ -441,10 +476,11 @@ function UserProfile() {
                   Close
                 </Button>
               </NavLink>
-              <Button
+             <Button
                 className="bg-blue-700 mb-10"
                 onClick={handleSubmit}
                 variant="contained"
+                disabled={!checkPass}
               >
                 Update
               </Button>
