@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { designationOptions } from "../utils/index";
 import { showNotification } from "../components/Toast";
 import Dropdown from "../components/Dropdown";
+import { BASE_URL } from "../constant";
 
 function AddAdmin() {
   const navigate = useNavigate();
@@ -324,7 +325,7 @@ function AddAdmin() {
   const appState: any = useContext(AppContext);
 
   const createUser = async (data: any) => {
-    const url = `http://localhost:8080/api/auth/signup`;
+    const url = `${BASE_URL}auth/signup`;
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
@@ -345,7 +346,7 @@ function AddAdmin() {
     }
   };
   const updateUser = async (data: any, id: any) => {
-    const url = `http://localhost:8080/api/auth/updateUserById/${id}`;
+    const url = `${BASE_URL}auth/updateUserById/${id}`;
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,

@@ -71,7 +71,7 @@ function UserProfile() {
   }, []);
 
   const updateUser = async (data: any, id: any) => {
-    const url = `http://localhost:8080/api/auth/updateUserById/${id}`;
+    const url = `${BASE_URL}auth/updateUserById/${id}`;
     let headersList = {      
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,

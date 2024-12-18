@@ -2,8 +2,8 @@
 import axios from "axios";
 import { useContext } from "react";
 import { AppContext } from "./AppContext";
+import { BASE_URL } from "../constant";
 
-const BASE_URL = "http://localhost:8080/api/";
 
 const useAxios = () => {
   const appState: any = useContext(AppContext);

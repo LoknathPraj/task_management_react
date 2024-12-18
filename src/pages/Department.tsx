@@ -7,6 +7,7 @@ import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
+import { BASE_URL } from "../constant";
 
 function Department() {
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ function Department() {
   const appState: any = useContext(AppContext);
 
   const createDept = async (data: any) => {
-    const url = `http://localhost:8080/api/department`;
+    const url = `${BASE_URL}department`;
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
