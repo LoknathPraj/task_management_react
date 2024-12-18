@@ -82,9 +82,18 @@ export default function Login() {
             className="border-1 border-gray-400 w-full h-11 pl-2 rounded"
           />
         </div>
-
+      
         <div className="m-auto text-center mt-15 mb-10">
-        {loading  && (
+    
+          <button
+            disabled={loading}
+            type="submit"
+            className="bg-blue-700 text-white p-2 rounded m-auto w-1/2"
+          >
+            Login
+          </button>
+          <div className="ml-45 mt-5">
+          {loading  && (
                   <Oval
                     height={35}
                     width={35}
@@ -93,15 +102,9 @@ export default function Login() {
                     strokeWidth={3}
                   />
                 )}
-          <button
-            disabled={loading}
-            type="submit"
-            className="bg-blue-700 text-white p-2 rounded m-auto w-1/2"
-          >
-            Login
-          </button>
-          {loading && <p>Loading...</p>}
+                </div>
         </div>
+       
       </div>
     </form>
   );
