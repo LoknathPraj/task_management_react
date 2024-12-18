@@ -83,16 +83,17 @@ const generateCombinedArray=()=>{
     );
     
     const combinedArray = [
-      ...tasksToday, 
-      ...usersNotInTasks?.map((user:any) => ({
-        name: user.name,
-        id: user.id,
-        working_hrs: 0,
-        totalSubmissions: 0,
-      
-
-      }))
+      ...(Array.isArray(tasksToday) ? tasksToday : []), 
+      ...(Array.isArray(usersNotInTasks) 
+        ? usersNotInTasks?.map((user: any) => ({
+            name: user.name,
+            id: user.id,
+            working_hrs: 0,
+            totalSubmissions: 0,
+          }))
+        : [])
     ];
+    
     return combinedArray
   }else{
     return undefined;
@@ -101,9 +102,6 @@ const generateCombinedArray=()=>{
   
 
 }
-
-
-
 
 useEffect(() => {
   if (Array.isArray(generateCombinedArray())) {

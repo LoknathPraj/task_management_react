@@ -262,11 +262,9 @@ function UserProfile() {
   return (
     <>
       <div className="w-[97%] mx-auto">
-        <h1 className="py-2  rounded-sm mb-4 mx-auto bg-blue-700 text-white text-center text-2xl">
-          My Profile
-        </h1>
+       
         <div
-          className="mx-auto mt-6"
+          className="mx-auto mt-2"
           style={{
             width: "150px",
             height: "100px",

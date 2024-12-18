@@ -10,6 +10,7 @@ const DropdownUser = () => {
   const userData = JSON.parse(localStorage.getItem("userDetails") || "{}");
 
   const context = useContext(AppContext);
+  const appState: any = useContext(AppContext);
   
   if (!context) {
     throw new Error("YourComponent must be used within an AppProvider");
@@ -51,7 +52,7 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            {userData?.user?.name}
+            {appState?.userDetails?.user?.name}
           </span>
           {/* <span className="block text-xs">{loginRole}</span> */}
         </span>

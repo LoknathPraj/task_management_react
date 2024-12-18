@@ -28,6 +28,7 @@ export default function App() {
       ) : appState?.userDetails?.user?.role === 10001 ? (
         <Routes>
           <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
             <Route path="/add-user" element={<AddUser />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tasks" element={<ViewAdminDashboard />} />
