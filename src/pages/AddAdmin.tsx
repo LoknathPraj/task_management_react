@@ -123,6 +123,7 @@ function AddAdmin() {
   const resetStates = () => {
     setFormErrors({});
     setFormData(null);
+    setPwd("")
     setMatchPwd("");
     setEditState(false);
   };

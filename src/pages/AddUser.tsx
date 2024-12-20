@@ -259,6 +259,7 @@ function AddUser() {
     setFormErrors({});
     setFormData({});
     setMatchPwd("");
+    setPwd("")
     setEditState(false);
   };
 
@@ -415,6 +416,7 @@ function AddUser() {
         departmentIds: formData?.department?.map((item:any)=>item?.value),
         password: matchPwd,
         role: 10000,
+        adminId: appState?.userDetails?.userId
       };
 
       if (userData?.id) {

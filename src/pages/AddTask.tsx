@@ -67,6 +67,8 @@ export default function AddTask() {
       task_description: description,
       username: appState?.userDetails?.user?.name,
       departmentId: appState?.userDetails?.user?.department,
+      adminId: appState?.userDetails?.adminId
+    
     };
     if (checkEmptyData()) return;
     if (workId) {
