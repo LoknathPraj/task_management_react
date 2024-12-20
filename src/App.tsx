@@ -13,6 +13,7 @@ import UserProfile from "./components/Header/UserProfile";
 import AddAdmin from "./pages/AddAdmin";
 import Department from "./pages/Department";
 import Project from "./pages/Project";
+import ViewTasks from "./pages/ViewTasks";
 
 export default function App() {
   const appState: any = useContext(AppContext);
@@ -40,8 +41,10 @@ export default function App() {
       ) : appState?.userDetails?.user?.role === 10000 ? (
         <Routes>
           <Route path="/" element={<Layout />}>
+          <Route index  element={<AddTask />} />
             <Route path="/user-profile" element={<UserProfile />} />
             <Route path="/add-task" element={<AddTask />} />
+            <Route path="/view-tasks" element={<ViewTasks />} />
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>

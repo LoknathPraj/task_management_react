@@ -7,6 +7,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import { AppContext } from "../../context/AppContext";
 import LanIcon from "@mui/icons-material/Lan";
 import TerminalIcon from "@mui/icons-material/Terminal";
+import { MdRemoveRedEye } from "react-icons/md";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -150,6 +151,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     >
                       <TaskIcon className="w-5 h-5 " />
                       Add Task
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/view-tasks"
+                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                    >
+                      <MdRemoveRedEye className="w-5 h-5 " />
+                      View Tasks
                     </NavLink>
                   </li>
                 </ul>

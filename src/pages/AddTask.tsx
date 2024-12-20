@@ -78,7 +78,7 @@ export default function AddTask() {
     }
   };
   
-
+  const display = { display: 'none' };
   const checkEmptyData = () => {
     if (
       project &&
@@ -167,10 +167,12 @@ export default function AddTask() {
     
     
   };
+
+  const hide = true;
   return (
     <div>
       <form className="p-4" onSubmit={_submitForm}>
-        <img src="/logo.png" className="m-auto" />
+        {/* <img src="/logo.png" className="m-auto" /> */}
         <div className="md:w-1/2 sm:w-full  m-auto text-left">
           <div className="w-full mb-2 ">
             <label className="text-left">Projects</label>
@@ -305,7 +307,7 @@ export default function AddTask() {
           </div>
         </div>
       </form>
-      <ViewUserTask insertedRecord={newInsertedData} onUpdate={onUpdate} />
+    <ViewUserTask insertedRecord={newInsertedData} onUpdate={onUpdate} styleFromComponent={display} />
     </div>
   );
 }

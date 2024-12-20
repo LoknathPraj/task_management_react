@@ -5,7 +5,7 @@ import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 
-export default function ViewUserTask({ insertedRecord, onUpdate }: any) {
+export default function ViewUserTask({ insertedRecord, onUpdate, styleFromComponent }: any) {
   interface ProjectType {
     id: string | number; // Adjust the type based on your data
     name: string;
@@ -85,6 +85,8 @@ const getAllProjects = async () => {
 
   const getTaskById = async () => {
     const url = `${BASE_URL}${Endpoint.GET_WORKLOG_BY_USERID}`;
+    console.log('url: ', url)
+
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
@@ -175,7 +177,10 @@ const getAllProjects = async () => {
 
   return (
     <div>
-      <div className="m-5">
+      <div className="m-5"
+      style={styleFromComponent}
+      >
+       
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}
