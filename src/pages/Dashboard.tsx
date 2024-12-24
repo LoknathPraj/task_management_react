@@ -34,6 +34,11 @@ function Dashboard() {
       headerName: "Total Working Hours",
       width: 200,
       headerClassName: "super-app-theme--header",
+      renderCell: (params:any) => (
+        <div>
+            <span className="cursor-pointer">{parseInt(params.value)}hrs</span>
+        </div>
+    ),
     },
    
   ];

@@ -14,6 +14,7 @@ import AddAdmin from "./pages/AddAdmin";
 import Department from "./pages/Department";
 import Project from "./pages/Project";
 import ViewTasks from "./pages/ViewTasks";
+import TaskType from "./pages/TaskType";
 
 export default function App() {
   const appState: any = useContext(AppContext);
@@ -35,6 +36,8 @@ export default function App() {
             <Route path="/tasks" element={<ViewAdminDashboard />} />
             <Route path="/project" element={<Project />} />
             <Route path="/user-profile" element={<UserProfile />} />
+            <Route path="/task-type" element={<TaskType />} />
+           
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>
