@@ -22,6 +22,7 @@ interface DropdownProps {
   className?: string;
   requiredField?: boolean;
   name?: string;
+  isClearable?: boolean
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -36,6 +37,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   disabled,
   onMenuClose,
   onMenuOpen,
+  isClearable,
   label,
   className,
   requiredField,
@@ -111,6 +113,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         required={required}
         styles={customStyles}
         className={className}
+        isClearable={isClearable}
       />
       
 

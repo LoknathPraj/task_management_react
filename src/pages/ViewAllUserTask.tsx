@@ -20,11 +20,12 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   const appState: any = useContext(AppContext);
   const [userList, setUserList] = useState([]);
   const [departmentValue, setDepartmentValue] = useState<any>();
-  const [userDetails, setUserDetails] = useState();
+  const [userDetails, setUserDetails] = useState<any>();
   const [departmentData, setDepartmentData] = useState<
     Department[] | undefined
   >();
   const [selectedValueInDropdown, setSelectedValueInDropdown] = useState<any>();
+  const [selectedValueInDropdown2, setSelectedValueInDropdown2] = useState<any>();
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -108,20 +109,32 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
   const departments = appState?.userDetails?.user?.department;
   
+  
+  
+  
 
   const deptOptions = departments
+
     ?.map((deptId: string) => {
       const department = departmentData?.find(
         (dept: Department) => dept.id === deptId
       );
-      
-
       return department
         ? { value: department.id, label: department.name }
         : null;
     })
     .filter(Boolean);
     
+
+const userOptions = userDetails?.map((item:any)=>{
+
+  if(appState?.userDetails?.adminId === item?.adminId)
+  return{
+    value:item?.id,
+    label:item?.name
+  }
+})
+
   const getTask = async () => {
     const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
     let headersList = {
@@ -218,10 +231,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     },
   ];
 
-  useEffect(() => {
-    getUsers();
-  }, []);
-
+ 
   const getUsers = async () => {
     const url = `${BASE_URL}${Endpoint.getUserList}`;
     let headersList = {
@@ -235,9 +245,15 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     if (response?.status === 200) {
       const data = await response?.json();
       const lUserList = data?.data;
+      
       setUserList(lUserList);
+      
     }
   };
+  useEffect(() => {
+    getUsers();
+  }, []);
+
 
   const getTaskByUserId = async (userId: any) => {
     if (!userId) {
@@ -268,8 +284,13 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   const handleDropdownChangeInGridTable = (option: any) => {
     setSelectedValueInDropdown(option);
   };
-
-  return (
+  const handleDropdownChangeInGridTable2 = (option: any) => {
+    
+    setSelectedValueInDropdown2(option);
+    getTaskByUserId(option?.value)
+  };
+ 
+  return ( 
     <div>
     
       <div className="w-full items-end"></div>
@@ -281,11 +302,19 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           rowData={rows}
           columnData={columns}
           filterDropdownData={userList}
+          filterDropdownData2={userList}
           onClickDropdown={handleDropdownChangeInGridTable}
+          onClickDropdown2={handleDropdownChangeInGridTable2}
           selectedValue={selectedValueInDropdown}
+          selectedValue2={selectedValueInDropdown2}
           dropdownLabel={"Departments"}
+          dropdownLabel2={"Users"}
           dropdownOptions={deptOptions}
+          dropdownOptions2={userOptions}
           dropdownName={"department"}
+          dropdownName2={"user"}
+         
+        
         />
       </div>
     </div>

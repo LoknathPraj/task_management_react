@@ -8,6 +8,7 @@ import { TbTrash } from "react-icons/tb";
 import { FiEdit, FiEye } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { HiAdjustmentsHorizontal } from "react-icons/hi2";
+import Dropdown from "./Dropdown";
 
 interface Props {
   rowData: any;
@@ -15,7 +16,8 @@ interface Props {
   onClickAction?: (type: string, row: any, id?: any) => void;
   showAction?: boolean;
   onClickAdd?: () => void;
-  onClickDropdown?: (option:any) => void;
+  onClickDropdown?: (option: any) => void;
+  onClickDropdown2?: (option: any) => void;
   onClickExport?: () => void;
   onClickFilter?: (id?: string) => void;
   topActionButtonTitle?: string;
@@ -23,11 +25,17 @@ interface Props {
   toolTipName?: string;
   actions?: Array<"DELETE" | "EDIT" | "VIEW">;
   filterDropdownData?: Array<any>;
-  dropdownLabel?:any,
-  dropdownName?:any,
-  dropdownOptions?:any,
-  selectedValue?:any
-
+  filterDropdownData2?: Array<any>;
+  dropdownLabel?: any;
+  dropdownName?: any;
+  dropdownOptions?: any;
+  dropdownState?: any;
+  selectedValue?: any;
+  dropdownLabel2?: any;
+  dropdownName2?: any;
+  dropdownOptions2?: any;
+  selectedValue2?: any;
+  isLoading?:boolean
 
   // checkbox:boolean
   // onPageChange?: (currentPage: any) => void;
@@ -47,19 +55,28 @@ function GridTable({
   onClickExport,
   onClickFilter,
   onClickDropdown,
+  onClickDropdown2,
   filterButtonTitle = "Filters",
   topActionButtonTitle = "Add",
   toolTipName,
   filterDropdownData = [],
+  filterDropdownData2 = [],
   dropdownLabel,
   dropdownName,
   dropdownOptions,
-  selectedValue
+  dropdownState,
+  dropdownLabel2,
+  dropdownName2,
+  dropdownOptions2,
+  isLoading,
+  selectedValue,
+  selectedValue2,
 }: Props) {
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState<Array<any>>([]);
   const [searchString, setSearchString] = useState<string>("");
   const [filterData, setFilterData] = useState<string>("");
+  
 
   useEffect(() => {
     setFilterData("");
@@ -109,8 +126,9 @@ function GridTable({
     } else {
       setRows([]);
     }
+   
   };
-
+  
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
       <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
@@ -137,34 +155,44 @@ function GridTable({
           </div>
         </div>
 
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           <div>
             {onClickDropdown && (
               <>
-                <Tooltip title={"Apply Filters"}>
+                
                   <div>
-                    <Autocomplete
-                      className="w-50"
+                 
+
+<Dropdown
+                      submitRef={true}
+                      multiple={false}
+                      defaultValue={selectedValue || null}
                       options={dropdownOptions}
-                      value={selectedValue}
-                      onChange={onClickDropdown}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label={dropdownLabel}
-                          name={dropdownName}
-                          InputLabelProps={{
-                            sx: {
-                              marginTop: "-8px",
-                            },
-                          }}
-                        />
-                      )}
+                      handleChange={onClickDropdown}
+                      defaultLabel={dropdownLabel}
+                      label=""
+                      className="mb-[-22px] w-[12.5rem]"
+                    />
+                  </div>
+              
+              </>
+            )}
+          </div>
+          <div>
+            {onClickDropdown2 && (
+              <>
+                <Tooltip title={"Apply Filters"}>
+                  <div className="ml-20">
+                  <Dropdown
+                      submitRef={true}
+                      multiple={false}
+                      defaultValue={selectedValue2 || null}
+                      options={dropdownOptions2}
+                      handleChange={onClickDropdown2}
+                      defaultLabel={dropdownLabel2}
+                      isClearable={true}
+                      label=""
+                      className="mb-[-22px] w-[12.5rem]"
                     />
                   </div>
                 </Tooltip>
@@ -272,6 +300,13 @@ function GridTable({
           getRowId={(row: any) => row?._id}
           className="bg-white rounded-none dark:border-strokedark dark:bg-boxdark "
           rows={rows}
+          // loading={isLoading}
+          // slotProps={{
+          //   loadingOverlay: {
+          //     variant: "skeleton",
+          //     noRowsVariant: "skeleton",
+          //   },
+          // }}
           columns={cols}
           rowSelection={false}
           initialState={{

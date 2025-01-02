@@ -251,6 +251,7 @@ export default function AddTask() {
                 }}
                 required
                 type="date"
+                // min={moment().subtract(2, "days").format("YYYY-MM-DD")}
                 style={{ borderWidth: 1 }}
                 className="border-1 border-gray-400 w-full h-8 rounded mb-2 pl-1"
               />
