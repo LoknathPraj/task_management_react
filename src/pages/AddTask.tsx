@@ -17,6 +17,7 @@ export default function AddTask() {
   const [newInsertedData, setNewInsertedData] = useState<any>(null);
   const [workId, setWorkId] = useState<any>("");
   const [projectData, setProjectData] = useState<any>();
+  const [taskTypeList,setTaskTypeList]=useState<Array<any>>([])
 
   const resetForm = () => {
     setProject("");
@@ -30,19 +31,18 @@ export default function AddTask() {
   };
   const axiosHandler = useAxios();
 
-   const getAllProjects = async () => {
-      try {
-        const response = await axiosHandler.get(`project/${appState?.userDetails?.user?.department?.[0]}`);
-        const data = response?.data?.data;
-        setProjectData(data);
-      } catch (error: any) {}
-    };
-    useEffect(() => {
-      getAllProjects();
-    }, []);
-
-    
-   
+  const getAllProjects = async () => {
+    try {
+      const response = await axiosHandler.get(
+        `project/${appState?.userDetails?.user?.department?.[0]}`
+      );
+      const data = response?.data?.data;
+      setProjectData(data);
+    } catch (error: any) {}
+  };
+  useEffect(() => {
+    getAllProjects();
+  }, []);
 
   const getMinutes = () => {
     const mins = [];
@@ -58,7 +58,9 @@ export default function AddTask() {
     const param = {
       _id: workId,
       projectId: project,
-      project_name: projectData?.find((project2:any)=> project2.id === project)?.name ,
+      project_name: projectData?.find(
+        (project2: any) => project2.id === project
+      )?.name,
       task_type: taskType,
       working_date: workingDate,
       working_hrs: workingHrs,
@@ -67,8 +69,7 @@ export default function AddTask() {
       task_description: description,
       username: appState?.userDetails?.user?.name,
       departmentId: appState?.userDetails?.user?.department,
-      adminId: appState?.userDetails?.adminId
-    
+      adminId: appState?.userDetails?.adminId,
     };
     if (checkEmptyData()) return;
     if (workId) {
@@ -77,8 +78,8 @@ export default function AddTask() {
       addTask(param);
     }
   };
-  
-  const display = { display: 'none' };
+
+  const display = { display: "none" };
   const checkEmptyData = () => {
     if (
       project &&
@@ -108,16 +109,14 @@ export default function AddTask() {
         const data = await response?.json();
         resetForm();
         setNewInsertedData({ data: data?.data, isInserted: true });
-        showNotification("success", "Task Added Successfully!")
+        showNotification("success", "Task Added Successfully!");
       } else {
-        showNotification("error", "Something went wrong")
+        showNotification("error", "Something went wrong");
       }
     } catch (err) {
-
-      showNotification("error", "Something went wrong")
+      showNotification("error", "Something went wrong");
     }
   }
-  
 
   async function updateTask(payload: any) {
     try {
@@ -135,18 +134,17 @@ export default function AddTask() {
         const data = await response?.json();
         resetForm();
         setNewInsertedData({ data: data?.worklog, isInserted: false });
-        showNotification("success", "Task Updated Successfully!")
+        showNotification("success", "Task Updated Successfully!");
       } else {
-        showNotification("error", "Something went wrong")
+        showNotification("error", "Something went wrong");
       }
     } catch (err) {
-      showNotification("error", "Something went wrong")
+      showNotification("error", "Something went wrong");
     }
   }
 
   const onUpdate = (row: any) => {
     const {
-   
       projectId,
       task_type,
       working_date,
@@ -164,11 +162,22 @@ export default function AddTask() {
     setWorkingDate(working_date);
     setLocation(location);
     setWorkId(_id);
-    
-    
   };
 
-  const hide = true;
+
+const getAllTaskTypeByprojectId = async () => {
+  try {
+    const response = await axiosHandler.get(`/task-type/`+project);
+    const data = response?.data?.data;
+    setTaskTypeList(data);
+  } catch (error: any) {}
+};
+useEffect(()=>{
+if(project){
+  getAllTaskTypeByprojectId()
+}
+},[project])
+console.log(taskTypeList)
   return (
     <div>
       <form className="p-4" onSubmit={_submitForm}>
@@ -177,19 +186,21 @@ export default function AddTask() {
           <div className="w-full mb-2 ">
             <label className="text-left">Projects</label>
             <select
-      required
-      value={project}
-      onChange={(e) => {setProject(e.target.value);}}
-      style={{ borderWidth: 1 }}
-      className="border-1 border-gray-400 w-full h-8 rounded"
-    >
-      <option value="">Select Projects</option>
-      {projectData?.map((option:any) => (
-        <option key={option.id} label={option.name}  value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
+              required
+              value={project}
+              onChange={(e) => {
+                setProject(e.target.value);
+              }}
+              style={{ borderWidth: 1 }}
+              className="border-1 border-gray-400 w-full h-8 rounded"
+            >
+              <option value="">Select Projects</option>
+              {projectData?.map((option: any) => (
+                <option key={option.id} label={option.name} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -202,12 +213,22 @@ export default function AddTask() {
               className="border-1 border-gray-400 w-full h-8 rounded mb-2"
             >
               <option value={""}>Select Tasks</option>
+              {projectData?.[0]?.department==="676175237bf34482eb021c89"?
+              <>
               <option value={"Code Development"}>Code Development</option>
               <option value={"Debugging"}>Debugging</option>
               <option value={"Testing"}>Testing</option>
               <option value={"Ui Design"}>Ui Design</option>
               <option value={"Meeting"}>Meeting</option>
               <option value={"Customer Support"}>Customer Support</option>
+              </>
+:
+taskTypeList?.map((option: any) => (
+                <option key={option.id} label={option.name} value={option.name}>
+                  {option.name}
+                </option>
+              ))}
+
             </select>
           </div>
 
@@ -294,7 +315,6 @@ export default function AddTask() {
               } p-2 rounded m-auto w-1/3`}
             >
               {workId ? "Update" : "Submit"}
-              
             </button>
             {workId && (
               <button
@@ -308,7 +328,11 @@ export default function AddTask() {
           </div>
         </div>
       </form>
-    <ViewUserTask insertedRecord={newInsertedData} onUpdate={onUpdate} styleFromComponent={display} />
+      <ViewUserTask
+        insertedRecord={newInsertedData}
+        onUpdate={onUpdate}
+        styleFromComponent={display}
+      />
     </div>
   );
 }

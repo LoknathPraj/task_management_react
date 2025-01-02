@@ -128,6 +128,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       Projects
                     </NavLink>
                   </li>
+                  <li>
+                    <NavLink
+                      to="/task-type"
+                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                    >
+                      <TerminalIcon className="w-5 h-5 " />
+                      Task Type
+                    </NavLink>
+                  </li>
                 </ul>
               ) : (
                 ""
