@@ -94,13 +94,11 @@ const getAllProjects = async () => {
 
     
 
-  useEffect(() => {
-    getTaskById();
-  }, []);
+
 
   const getTaskById = async () => {
     const url = `${BASE_URL}${Endpoint.GET_WORKLOG_BY_USERID}`;
-    console.log('url: ', url)
+    
 
     let headersList = {
       "Content-Type": "application/json",
@@ -122,7 +120,9 @@ const getAllProjects = async () => {
       setRows(r);
     }
   };
-
+  useEffect(() => {
+    getTaskById();
+  }, []);
   const deleteTaskById = async (taskId: string) => {
     const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
     let headersList = {
@@ -277,12 +277,18 @@ const getAllProjects = async () => {
 
     if (workId) {
       updateTask(param);
+  
+      
     }
   };
  
   const handleUpdate = (row: any) => {
+    const projectName = row?.project_name
+    
+    const projectId = projectData?.find(
+      (project2: any) => project2.name === projectName
+    )?.id
     const {
-      projectId,
       task_type,
       working_date,
       working_hrs,
@@ -292,6 +298,8 @@ const getAllProjects = async () => {
       _id,
     } = row;
     setProject(projectId);
+    
+
     setWorkingHrs(working_hrs);
     setTaskType(task_type);
     setWorkingMinutes(working_mins);
@@ -299,7 +307,10 @@ const getAllProjects = async () => {
     setWorkingDate(working_date);
     setLocation(location);
     setWorkId(_id);
+
   };
+
+  
 
   const onClickButton = (type: string) => {
     if (type) {
@@ -333,7 +344,7 @@ if(project){
           actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
-          toolTipName={"Create Team"}
+          toolTipName={""}
         />
       </div>
       {isModalOpen && <Modal
@@ -341,7 +352,7 @@ if(project){
        customFooter={true}
        //modalSize=""
        modalHeight = "h-[500px]"
-       modalHeader={"Update Department"}
+       modalHeader={"Update Task"}
        modalBody={
          <div
            className="grid  gap-x-4 gap-y-4"
