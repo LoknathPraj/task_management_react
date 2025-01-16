@@ -63,8 +63,8 @@ export default function AddTask() {
       )?.name,
       task_type: taskType,
       working_date: workingDate,
-      working_hrs: workingHrs,
-      working_mins: workingMinutes,
+      working_hrs: workingHrs||"0",
+      working_mins: workingMinutes||"0",
       location,
       task_description: description,
       username: appState?.userDetails?.user?.name,
@@ -81,16 +81,25 @@ export default function AddTask() {
 
   const display = { display: "none" };
   const checkEmptyData = () => {
+
     if (
       project &&
       taskType &&
       workingDate &&
       workingHrs &&
       location &&
-      description?.trim()
+      description?.trim() &&projectData?.[0]?.department==="676175237bf34482eb021c89"
     ) {
       return false;
-    } else return true;
+    }
+    else if(project &&
+      taskType &&
+      workingDate &&
+      location &&
+      description?.trim()){
+        return false;
+    }
+    else return true;
   };
 
   async function addTask(payload: any) {
@@ -236,9 +245,15 @@ taskTypeList?.map((option: any) => (
             <label>Time</label>
             <div className="flex">
               <select
-                required
+                // required
+                required={projectData?.[0]?.department==="676175237bf34482eb021c89"?true:false}
                 value={workingHrs}
-                onChange={(e) => setWorkingHrs(e.target.value)}
+                onChange={(e) => {
+                  if(!workingHrs){
+                    setWorkingMinutes("0")
+                  }
+                  setWorkingHrs(e.target.value)
+                }}
                 style={{ borderWidth: 1 }}
                 className="border-1 border-gray-400 w-full h-8 rounded mb-2"
               >
@@ -251,7 +266,7 @@ taskTypeList?.map((option: any) => (
               </select>
 
               <select
-                required
+                 required={projectData?.[0]?.department==="676175237bf34482eb021c89"?true:false}
                 value={workingMinutes}
                 onChange={(e) => setWorkingMinutes(e.target.value)}
                 style={{ borderWidth: 1 }}
@@ -270,7 +285,7 @@ taskTypeList?.map((option: any) => (
                 onChange={(e) => {
                   setWorkingDate(e.target.value);
                 }}
-                required
+               
                 type="date"
                 // min={moment().subtract(2, "days").format("YYYY-MM-DD")}
                 style={{ borderWidth: 1 }}
