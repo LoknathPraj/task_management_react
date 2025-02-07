@@ -468,6 +468,7 @@ if(project){
                      <option color="gray">Select Location</option>
                      <option value={"Thane"}>Thane</option>
                      <option value={"Nashik"}>Nashik</option>
+                     <option value={"Chh Sambhaji Nagar"}>Chh Sambhaji Nagar</option>
                    </select>
                  </div>
                  <div className="">
