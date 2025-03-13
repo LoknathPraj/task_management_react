@@ -36,7 +36,12 @@ function AddUser() {
   const [loading, setLoading] = useState<any>(false)
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getUserDetails(paginationModel.page, paginationModel.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -127,16 +132,18 @@ function AddUser() {
   
 
   const axiosHandler = useAxios();
-  const getUserDetails = async () => {
+  const getUserDetails = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.get(`auth/getUserList`);
-
+      const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
+
       setUserList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
   };
   useEffect(() => {
-    getUserDetails();
+    getUserDetails(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   const EmployeeList = userList?.filter((item: any) => item?.role === 10000);
   
@@ -276,7 +283,7 @@ function AddUser() {
         const department = deptOptions.find(
           (item: { label: string; value: string }) =>
             item?.label === departmentLabel
-              ? { label: item.label}
+              ? { label: item.label }
               : null
         );
         return department?.label;
@@ -295,10 +302,12 @@ function AddUser() {
         setLoading(false);
         showNotification("success", "Admin deleted successfully!");
       }
-      getUserDetails();
-    } catch (error: any) {setLoading(false);
-      showNotification("error", "Something went wrong");}
-    
+      getUserDetails(paginationModel.page, paginationModel.pageSize);
+    } catch (error: any) {
+      setLoading(false);
+      showNotification("error", "Something went wrong");
+    }
+
   };
   const handleDelete = (_id: string) => {
     setLoading(true);
@@ -384,11 +393,11 @@ function AddUser() {
       body: JSON.stringify(data),
     });
 
-    if (response) {
-      getUserDetails();
-      setLoading(false);
-      showNotification("success", "User updated succesfully!");
-    }
+      if (response) {
+        getUserDetails(paginationModel.page, paginationModel.pageSize);
+        setLoading(false);
+        showNotification("success", "User updated succesfully!");
+      }
 
   }
  catch (error) {
@@ -426,8 +435,8 @@ function AddUser() {
       }
       setLoading(false)
       setIsModalOpen(!isModalOpen);
-   resetStates();
-      getUserDetails();
+      resetStates();
+      getUserDetails(paginationModel.page, paginationModel.pageSize);
     }
   };
   const handleKeyDown = (event:any) => {
@@ -448,6 +457,8 @@ function AddUser() {
           }}
           columnData={columns}
           toolTipName={"Create User"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

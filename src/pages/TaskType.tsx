@@ -31,7 +31,12 @@ function TaskType() {
     Department[] | undefined
   >();
   const [editIsClicked, setEditIsClicked] = useState(false);
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllTaskType(paginationModel.page, paginationModel.pageSize);
+  };
   const columns: any[] = [
  
     {
@@ -73,11 +78,13 @@ function TaskType() {
     } catch (error: any) {}
   };
 
-  const getAllTaskType = async () => {
+  const getAllTaskType = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.get(`/task-type/`);
+      const response = await axiosHandler.get(`/task-type/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setRows(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
   };
 
@@ -86,7 +93,7 @@ function TaskType() {
 
   useEffect(() => {
     getAllProjects();
-    getAllTaskType()
+    getAllTaskType(paginationModel.page, paginationModel.pageSize)
   }, []);
 
   const requiredInputFields: any = {
@@ -126,7 +133,7 @@ function TaskType() {
         `task-type/deleteTaskTypeById/${id}`
       );
       showNotification("success", "Task Type deleted successfully!");
-      getAllTaskType();
+      getAllTaskType(paginationModel.page, paginationModel.pageSize);
     } catch (error: any) {
       showNotification("error", "Something went wrong");
     }
@@ -168,7 +175,7 @@ function TaskType() {
 
       setIsModalOpen(!isModalOpen);
     setFormData({});
-    getAllTaskType();
+    getAllTaskType(paginationModel.page, paginationModel.pageSize);
     resetStates();
     
     } catch (error: any) {
@@ -222,6 +229,8 @@ console.log(projectList)
           }}
           columnData={columns}
           toolTipName={"Create Task"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

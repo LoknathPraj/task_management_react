@@ -25,7 +25,12 @@ function AddAdmin() {
   const [loading, setLoading] = useState<any>(false);
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getUserDetails(paginationModel.page, paginationModel.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -93,16 +98,18 @@ function AddAdmin() {
   }, [pwd, matchPwd]);
 
   const axiosHandler = useAxios();
-  const getUserDetails = async () => {
+  const getUserDetails = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.get(`auth/getUserList`);
+      const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
 
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setUserList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
   };
   useEffect(() => {
-    getUserDetails();
+    getUserDetails(paginationModel?.page, paginationModel?.pageSize);
   }, []);
 
   const getAllDept = async () => {
@@ -278,7 +285,7 @@ function AddAdmin() {
         setLoading(false);
         showNotification("success", "Admin deleted successfully!");
       }
-      getUserDetails();
+      getUserDetails(paginationModel?.page, paginationModel?.pageSize);
     } catch (error: any) {
       setLoading(false);
       showNotification("error", "Something went wrong");
@@ -359,7 +366,7 @@ function AddAdmin() {
         body: JSON.stringify(data),
       });
       if (response) {
-        getUserDetails();
+        getUserDetails(paginationModel?.page, paginationModel?.pageSize);
         setLoading(false);
         showNotification("success", "Admin updated successfully!");
       }
@@ -397,7 +404,7 @@ function AddAdmin() {
       setLoading(false)
       setIsModalOpen(!isModalOpen);
       resetStates();
-      getUserDetails();
+      getUserDetails(paginationModel?.page, paginationModel?.pageSize);
     }
   };
 
@@ -414,6 +421,8 @@ function AddAdmin() {
           }}
           columnData={columns}
           toolTipName={"Create Admin"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

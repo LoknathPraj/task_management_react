@@ -31,7 +31,12 @@ function Project() {
   Department[] | undefined
 >();
 const [editIsClicked, setEditIsClicked] = useState(false)
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllProjects(paginationModel?.page, paginationModel?.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -67,15 +72,17 @@ const [editIsClicked, setEditIsClicked] = useState(false)
   ];
 
   const axiosHandler = useAxios();
-  const getAllProjects = async () => {
+  const getAllProjects = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.get(`/project/`);
+      const response = await axiosHandler.get(`/project/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setProjectList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
   };
   useEffect(() => {
-    getAllProjects();
+    getAllProjects(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   useEffect(() => {
     if (Array.isArray(projectList)) {
@@ -141,7 +148,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     try {
       const response = await axiosHandler.get(`project/deleteProjectById/${id}`);
       showNotification("success", "Project deleted successfully!")
-      getAllProjects();
+      getAllProjects(paginationModel?.page, paginationModel?.pageSize);
       
     } catch (error: any) {
       showNotification("error", "Something went wrong")
@@ -256,7 +263,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
       }
       setIsModalOpen(!isModalOpen);
       setFormData({});
-      getAllProjects();
+      getAllProjects(paginationModel?.page, paginationModel?.pageSize);
       resetStates();
     }
   };
@@ -298,6 +305,8 @@ const [editIsClicked, setEditIsClicked] = useState(false)
           }}
           columnData={columns}
           toolTipName={"Create Project"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

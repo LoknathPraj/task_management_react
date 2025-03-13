@@ -18,7 +18,12 @@ function Department() {
   const [formData, setFormData] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>();
   const [editIsClicked, setEditIsClicked] = useState(false)
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllDept(paginationModel.page, paginationModel.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -48,15 +53,17 @@ function Department() {
   ];
 
   const axiosHandler = useAxios();
-  const getAllDept = async () => {
+  const getAllDept = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.post(`department/getDepartmentbyIds`);
+      const response = await axiosHandler.post(`department/getDepartmentbyIds?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setDepartmentList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
   };
   useEffect(() => {
-    getAllDept();
+    getAllDept(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   useEffect(() => {
     if (Array.isArray(departmentList)) {
@@ -147,7 +154,7 @@ function Department() {
     try {
       const response = await axiosHandler.get(`department/deleteDepartmentById/${id}`);
       showNotification("success", "Department deleted successfully!")
-      getAllDept();
+      getAllDept(paginationModel.page, paginationModel.pageSize);
       
     } catch (error: any) {
       showNotification("error", "Something went wrong")
@@ -232,7 +239,7 @@ function Department() {
       }
       setIsModalOpen(!isModalOpen);
       setFormData({});
-      getAllDept();
+      getAllDept(paginationModel.page, paginationModel.pageSize);
     }
   };
 
@@ -260,6 +267,8 @@ function Department() {
           }}
           columnData={columns}
           toolTipName={"Create Department"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

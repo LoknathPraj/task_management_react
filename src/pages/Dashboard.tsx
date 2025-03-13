@@ -11,8 +11,9 @@ function Dashboard() {
   const [tasksToday, setTasksToday] = useState<any>(); 
   const [usernames, setUsernames] = useState<any>();
   const [userList, setUserList] = useState<any>();
-   const [rows, setRows] = useState<Array<any>>([]);
-
+  const [rows, setRows] = useState<Array<any>>([]);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
   const axiosHandler = useAxios();
   const appState: any = useContext(AppContext);
 
@@ -42,9 +43,15 @@ function Dashboard() {
     },
    
   ];
-   
+
+
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getUserDetails(paginationModel.page, paginationModel.pageSize);
+  };
+
   useEffect(() => {
-    getUserDetails();
+    getUserDetails(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   const getTodaysWorklog = async () => {
     try {
@@ -58,16 +65,18 @@ function Dashboard() {
     getTodaysWorklog();
   }, []);
 
-  const getUserDetails = async () => {
+  const getUserDetails = async (page: any, pageSize: any) => {
     try {
-      const response = await axiosHandler.get(`auth/getUserList`);
-  
-      const data = response?.data?.data;
-  
-      
-  
-  
-      setUserList(data); 
+      const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
+
+      const { data } = response?.data;
+
+      const { totalItems } = response?.data;
+
+
+
+      setUserList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {
       
     }
@@ -137,7 +146,8 @@ const progress = (uniqueCount/userCount)
           rowData={rows}
           columnData={columns}
           toolTipName={"Create User"}
-         
+         onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
   <div className="col-span-1 mt-8 ">

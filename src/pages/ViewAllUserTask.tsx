@@ -26,6 +26,19 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   >();
   const [selectedValueInDropdown, setSelectedValueInDropdown] = useState<any>();
   const [selectedValueInDropdown2, setSelectedValueInDropdown2] = useState<any>();
+
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
+
+
+  // Function to handle pagination changes
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getTask(paginationModel.page, paginationModel.pageSize);
+  };
+
+
+  console.log(paginationModel);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -76,10 +89,10 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   }, [insertedRecord]);
 
-  
+
 
   useEffect(() => {
-    getTask();
+    getTask(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   const axiosHandler = useAxios();
   const getUserDetails = async () => {
@@ -88,30 +101,30 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
       const data = response?.data?.data;
       setUserDetails(data);
-    } catch (error: any) {}
+    } catch (error: any) { }
   };
   useEffect(() => {
     getUserDetails();
   }, []);
 
-  
+
 
   const getAllDept = async () => {
     try {
       const response = await axiosHandler.post(`department/getDepartmentbyIds`);
       const data = response?.data?.data;
       setDepartmentData(data);
-    } catch (error: any) {}
+    } catch (error: any) { }
   };
   useEffect(() => {
     getAllDept();
   }, []);
 
   const departments = appState?.userDetails?.user?.department;
-  
-  
-  
-  
+
+
+
+
 
   const deptOptions = departments
 
@@ -124,19 +137,20 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
         : null;
     })
     .filter(Boolean);
-    
 
-const userOptions = userDetails?.map((item:any)=>{
 
-  if(appState?.userDetails?.adminId === item?.adminId)
-  return{
-    value:item?.id,
-    label:item?.name
-  }
-})
+  const userOptions = userDetails?.map((item: any) => {
 
-  const getTask = async () => {
-    const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
+    if (appState?.userDetails?.adminId === item?.adminId)
+      return {
+        value: item?.id,
+        label: item?.name
+      }
+  })
+
+  const getTask = async (page: any, pageSize: any) => {
+    const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
+
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
@@ -147,8 +161,10 @@ const userOptions = userDetails?.map((item:any)=>{
     });
     if (response?.status === 201) {
       const data = await response?.json();
+      console.log(data);
+      setTotalRows(data?.totalItems)
       const taskList = data?.data;
-      const r = taskList?.reverse().map((e: any) => ({
+      const r = taskList?.map((e: any) => ({
         ...e,
         display_working_date: new Date(e.working_date)?.toLocaleDateString(),
         working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
@@ -231,7 +247,7 @@ const userOptions = userDetails?.map((item:any)=>{
     },
   ];
 
- 
+
   const getUsers = async () => {
     const url = `${BASE_URL}${Endpoint.getUserList}`;
     let headersList = {
@@ -245,9 +261,9 @@ const userOptions = userDetails?.map((item:any)=>{
     if (response?.status === 200) {
       const data = await response?.json();
       const lUserList = data?.data;
-      
+
       setUserList(lUserList);
-      
+
     }
   };
   useEffect(() => {
@@ -257,7 +273,7 @@ const userOptions = userDetails?.map((item:any)=>{
 
   const getTaskByUserId = async (userId: any) => {
     if (!userId) {
-      getTask();
+      getTask(paginationModel?.page, paginationModel?.pageSize);
       return;
     }
     const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
@@ -272,7 +288,7 @@ const userOptions = userDetails?.map((item:any)=>{
     if (response?.status === 200) {
       const data = await response?.json();
       const taskList = data?.data;
-      const r = taskList?.reverse().map((e: any) => ({
+      const r = taskList?.().map((e: any) => ({
         ...e,
         display_working_date: new Date(e.working_date)?.toLocaleDateString(),
         working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
@@ -285,14 +301,14 @@ const userOptions = userDetails?.map((item:any)=>{
     setSelectedValueInDropdown(option);
   };
   const handleDropdownChangeInGridTable2 = (option: any) => {
-    
+
     setSelectedValueInDropdown2(option);
     getTaskByUserId(option?.value)
   };
- 
-  return ( 
+
+  return (
     <div>
-    
+
       <div className="w-full items-end"></div>
       <div className="m-5">
         <GridTable
@@ -313,8 +329,13 @@ const userOptions = userDetails?.map((item:any)=>{
           dropdownOptions2={userOptions}
           dropdownName={"department"}
           dropdownName2={"user"}
-         
-        
+
+
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
+
+
+
         />
       </div>
     </div>
