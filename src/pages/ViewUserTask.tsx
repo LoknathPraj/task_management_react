@@ -6,6 +6,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Modal from "../components/Modal";
 import moment from "moment";
+import Loader from "../components/Loader";
 
 export default function ViewUserTask({ insertedRecord, onUpdate, styleFromComponent }: any) {
   interface ProjectType {
@@ -30,7 +31,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
   const [taskTypeList, setTaskTypeList] = useState<Array<any>>([])
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
-
+ const [loading, setLoading] = useState(false);
 
   // Function to handle pagination changes
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
@@ -90,11 +91,15 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
 
 
   const getAllProjects = async () => {
+    setLoading(true);
     try {
       const response = await axiosHandler.get(`project/`);
       const data = response?.data?.data;
       setProjectData(data);
     } catch (error: any) { }
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
     getAllProjects();
@@ -347,7 +352,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
       <div className="m-5"
         style={styleFromComponent}
       >
-       
+           {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}

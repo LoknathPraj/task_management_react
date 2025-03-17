@@ -5,6 +5,7 @@ import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import GridTable from "../components/GridTable";
+import Loader from "../components/Loader";
 
 function Dashboard() {
   const [allTasks, SetAllTasks] = useState<any>()
@@ -16,7 +17,7 @@ function Dashboard() {
   const [totalRows, setTotalRows] = useState(0);
   const axiosHandler = useAxios();
   const appState: any = useContext(AppContext);
-
+  const [loading, setLoading] = useState(false);
   const columns: any[] = [
     {
       field: "username",
@@ -55,11 +56,16 @@ function Dashboard() {
   }, []);
   const getTodaysWorklog = async () => {
     try {
+      setLoading(true); 
+
       const response = await axiosHandler.get(`/worklog/getTodaysWorklog`);
 
       const data = response?.data?.data;
       setTasksToday(data);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
     getTodaysWorklog();
@@ -141,6 +147,7 @@ const progress = (uniqueCount/userCount)
     <>
       <div className="grid grid-cols-3">
       <div className="m-5 h-8 col-span-2">
+      {loading && <Loader />}
         <GridTable
           onClickAction={()=>{}}
           rowData={rows}

@@ -16,6 +16,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { showNotification } from "../components/Toast";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 // import { Oval } from "react-loader-spinner";
  
 
@@ -33,11 +34,11 @@ function AddUser() {
   // const [matchFocus, setMatchFocus] = useState(false);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
-  const [loading, setLoading] = useState<any>(false)
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);
+    const [loading, setLoading] = useState(false);
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
     setPaginationModel(paginationModel);
     getUserDetails(paginationModel.page, paginationModel.pageSize);
@@ -133,6 +134,7 @@ function AddUser() {
 
   const axiosHandler = useAxios();
   const getUserDetails = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
       const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
@@ -140,7 +142,9 @@ function AddUser() {
 
       setUserList(data);
       setTotalRows(totalItems);
-    } catch (error: any) {}
+    } catch (error: any) {} finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
     getUserDetails(paginationModel?.page, paginationModel?.pageSize);
@@ -293,8 +297,6 @@ function AddUser() {
     setIsModalOpen(true);
   };
   
- 
-
   const deleteUserById = async (id: any) => {
     try {
       const response = await axiosHandler.get(`auth/deleteUserById/${id}`);
@@ -307,7 +309,6 @@ function AddUser() {
       setLoading(false);
       showNotification("error", "Something went wrong");
     }
-
   };
   const handleDelete = (_id: string) => {
     setLoading(true);
@@ -447,6 +448,7 @@ function AddUser() {
   return (
     <>
       <div className="m-5 h-10">
+      {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}

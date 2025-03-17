@@ -9,6 +9,7 @@ import { designationOptions } from "../utils/index";
 import { showNotification } from "../components/Toast";
 import Dropdown from "../components/Dropdown";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function AddAdmin() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ function AddAdmin() {
   const [validPwd, setValidPwd] = useState(true);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
-  const [loading, setLoading] = useState<any>(false);
+  const [loading, setLoading] = useState(false);
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
@@ -99,6 +100,7 @@ function AddAdmin() {
 
   const axiosHandler = useAxios();
   const getUserDetails = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
       const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
 
@@ -107,6 +109,9 @@ function AddAdmin() {
       setUserList(data);
       setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
     getUserDetails(paginationModel?.page, paginationModel?.pageSize);
@@ -411,6 +416,7 @@ function AddAdmin() {
   return (
     <>
       <div className="m-5 h-10">
+      {loading&& <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}

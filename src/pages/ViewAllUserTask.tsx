@@ -3,6 +3,7 @@ import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
+import Loader from "../components/Loader";
 
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   interface Department {
@@ -29,7 +30,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
-
+  const [loading, setLoading] = useState(false);
 
   // Function to handle pagination changes
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
@@ -148,32 +149,36 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       }
   })
 
-  const getTask = async (page: any, pageSize: any) => {
-    const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
-
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 201) {
-      const data = await response?.json();
-      console.log(data);
-      setTotalRows(data?.totalItems)
-      const taskList = data?.data;
-      const r = taskList?.map((e: any) => ({
-        ...e,
-        display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-        working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-      }));
-
-      setRows(r);
+ const getTask = async (page: any, pageSize: any) => {
+    setLoading(true);
+    try {
+      const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
+      const headersList = {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headersList,
+      });
+      if (response?.status === 201) {
+        const data = await response.json();
+        console.log(data);
+        setTotalRows(data?.totalItems);
+        const taskList = data?.data;
+        const r = taskList?.map((e: any) => ({
+          ...e,
+          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+        }));
+        setRows(r);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
-
   const deleteTaskById = async (taskId: string) => {
     const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
     let headersList = {
@@ -270,31 +275,36 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     getUsers();
   }, []);
 
-
   const getTaskByUserId = async (userId: any) => {
-    if (!userId) {
-      getTask(paginationModel?.page, paginationModel?.pageSize);
-      return;
-    }
-    const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 200) {
-      const data = await response?.json();
-      const taskList = data?.data;
-      const r = taskList?.().map((e: any) => ({
-        ...e,
-        display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-        working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-      }));
-
-      setRows(r);
+    setLoading(true);
+    try {
+      if (!userId) {
+        await getTask(paginationModel?.page, paginationModel?.pageSize);
+        return;
+      }
+      const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
+      const headersList = {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headersList,
+      });
+      if (response?.status === 200) {
+        const data = await response.json();
+        const taskList = data?.data;
+        const r = taskList?.map((e: any) => ({
+          ...e,
+          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+        }));
+        setRows(r);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleDropdownChangeInGridTable = (option: any) => {
@@ -311,6 +321,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
       <div className="w-full items-end"></div>
       <div className="m-5">
+      {loading && <Loader />}
         <GridTable
           // showAction={false}
           //   onClickAction={onClickAction}

@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function Department() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ function Department() {
     setPaginationModel(paginationModel);
     getAllDept(paginationModel.page, paginationModel.pageSize);
   };
+  const [loading, setLoading] = useState(false);
   const columns: any[] = [
     {
       field: "s_no",
@@ -54,6 +56,7 @@ function Department() {
 
   const axiosHandler = useAxios();
   const getAllDept = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
       const response = await axiosHandler.post(`department/getDepartmentbyIds?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
@@ -61,6 +64,9 @@ function Department() {
       setDepartmentList(data);
       setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
     getAllDept(paginationModel?.page, paginationModel?.pageSize);
@@ -258,6 +264,7 @@ function Department() {
   return (
     <>
       <div className="m-5 h-10">
+      {loading&& <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}

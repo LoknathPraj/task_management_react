@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function TaskType() {
   interface Department {
@@ -37,6 +38,7 @@ function TaskType() {
     setPaginationModel(paginationModel);
     getAllTaskType(paginationModel.page, paginationModel.pageSize);
   };
+  const [loading, setLoading] = useState(false);
   const columns: any[] = [
  
     {
@@ -79,6 +81,7 @@ function TaskType() {
   };
 
   const getAllTaskType = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
       const response = await axiosHandler.get(`/task-type/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
@@ -86,6 +89,9 @@ function TaskType() {
       setRows(data);
       setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
 
 
@@ -219,6 +225,7 @@ console.log(projectList)
   return (
     <>
       <div className="m-5 h-10">
+      {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}

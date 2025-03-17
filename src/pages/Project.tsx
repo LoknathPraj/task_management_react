@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function Project() {
   interface Department {
@@ -30,6 +31,7 @@ function Project() {
   const [departmentData, setDepartmentData] = useState<
   Department[] | undefined
 >();
+const [loading, setLoading] = useState(false);
 const [editIsClicked, setEditIsClicked] = useState(false)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);
@@ -73,6 +75,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
 
   const axiosHandler = useAxios();
   const getAllProjects = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
       const response = await axiosHandler.get(`/project/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
@@ -80,6 +83,9 @@ const [editIsClicked, setEditIsClicked] = useState(false)
       setProjectList(data);
       setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); // Stop loader
+    }
   };
   useEffect(() => {
     getAllProjects(paginationModel?.page, paginationModel?.pageSize);
@@ -295,6 +301,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     <>
    
       <div className="m-5 h-10">
+      {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}
