@@ -37,7 +37,8 @@ interface Props {
   dropdownName2?: any;
   dropdownOptions2?: any;
   selectedValue2?: any;
-  isLoading?:boolean
+  isLoading?: boolean
+
 
   // checkbox:boolean
   // onPageChange?: (currentPage: any) => void;
@@ -75,12 +76,13 @@ function GridTable({
   selectedValue2,
   onPaginationChange,
   rowCount,
+
 }: Props) {
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState<Array<any>>([]);
   const [searchString, setSearchString] = useState<string>("");
   const [filterData, setFilterData] = useState<string>("");
-  
+
 
   useEffect(() => {
     setFilterData("");
@@ -111,7 +113,7 @@ function GridTable({
     } else {
       setCols(columnData);
     }
-  }, [rowData, columnData]);
+  }, [rowData, columnData,]);
 
   const requestSearch = (searchValue: any) => {
     setSearchString(searchValue);
@@ -130,9 +132,9 @@ function GridTable({
     } else {
       setRows([]);
     }
-   
+
   };
-  
+
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
       <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
@@ -163,22 +165,22 @@ function GridTable({
           <div>
             {onClickDropdown && (
               <>
-                
-                  <div>
-                 
 
-<Dropdown
-                      submitRef={true}
-                      multiple={false}
-                      defaultValue={selectedValue || null}
-                      options={dropdownOptions}
-                      handleChange={onClickDropdown}
-                      defaultLabel={dropdownLabel}
-                      label=""
-                      className="mb-[-22px] w-[12.5rem]"
-                    />
-                  </div>
-              
+                <div>
+
+
+                  <Dropdown
+                    submitRef={true}
+                    multiple={false}
+                    defaultValue={selectedValue || null}
+                    options={dropdownOptions}
+                    handleChange={onClickDropdown}
+                    defaultLabel={dropdownLabel}
+                    label=""
+                    className="mb-[-22px] w-[12.5rem]"
+                  />
+                </div>
+
               </>
             )}
           </div>
@@ -187,7 +189,7 @@ function GridTable({
               <>
                 <Tooltip title={"Apply Filters"}>
                   <div className="ml-20">
-                  <Dropdown
+                    <Dropdown
                       submitRef={true}
                       multiple={false}
                       defaultValue={selectedValue2 || null}
@@ -242,7 +244,7 @@ function GridTable({
               <>
                 <Tooltip title={toolTipName}>
                   <div
-                    className="cursor-pointer w-20 h-9 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-25 p-2 h-10 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickExport && onClickExport();
                     }}

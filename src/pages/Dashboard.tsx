@@ -158,7 +158,8 @@ const progress = (uniqueCount/userCount)
         />
       </div>
   <div className="col-span-1 mt-8 ">
-      <div className="flex items-center justify-center ">   <ProgressCircle
+      <div className="flex items-center justify-center ">   
+        <ProgressCircle
                 progress={progress}
                 count={userCount}
                 count2={uniqueCount}

@@ -15,6 +15,7 @@ import Department from "./pages/Department";
 import Project from "./pages/Project";
 import ViewTasks from "./pages/ViewTasks";
 import TaskType from "./pages/TaskType";
+import NewDashboard from "./pages/NewDashboard";
 
 export default function App() {
   const appState: any = useContext(AppContext);
@@ -30,9 +31,10 @@ export default function App() {
       ) : appState?.userDetails?.user?.role === 10001 ? (
         <Routes>
           <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<NewDashboard/>} />
             <Route path="/add-user" element={<AddUser />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/new-dashboard" element={<NewDashboard />} />
             <Route path="/tasks" element={<ViewAdminDashboard />} />
             <Route path="/project" element={<Project />} />
             <Route path="/user-profile" element={<UserProfile />} />
