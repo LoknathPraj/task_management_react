@@ -163,7 +163,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       });
       if (response?.status === 201) {
         const data = await response.json();
-        console.log(data);
         setTotalRows(data?.totalItems);
         const taskList = data?.data;
         const r = taskList?.map((e: any) => ({
