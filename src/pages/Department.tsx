@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function Department() {
   const navigate = useNavigate();
@@ -18,7 +19,13 @@ function Department() {
   const [formData, setFormData] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>();
   const [editIsClicked, setEditIsClicked] = useState(false)
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllDept(paginationModel.page, paginationModel.pageSize);
+  };
+  const [loading, setLoading] = useState(false);
   const columns: any[] = [
     {
       field: "s_no",
@@ -48,15 +55,21 @@ function Department() {
   ];
 
   const axiosHandler = useAxios();
-  const getAllDept = async () => {
+  const getAllDept = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
-      const response = await axiosHandler.post(`department/getDepartmentbyIds`);
+      const response = await axiosHandler.post(`department/getDepartmentbyIds?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setDepartmentList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
-    getAllDept();
+    getAllDept(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   useEffect(() => {
     if (Array.isArray(departmentList)) {
@@ -147,7 +160,7 @@ function Department() {
     try {
       const response = await axiosHandler.get(`department/deleteDepartmentById/${id}`);
       showNotification("success", "Department deleted successfully!")
-      getAllDept();
+      getAllDept(paginationModel.page, paginationModel.pageSize);
       
     } catch (error: any) {
       showNotification("error", "Something went wrong")
@@ -232,7 +245,7 @@ function Department() {
       }
       setIsModalOpen(!isModalOpen);
       setFormData({});
-      getAllDept();
+      getAllDept(paginationModel.page, paginationModel.pageSize);
     }
   };
 
@@ -251,6 +264,7 @@ function Department() {
   return (
     <>
       <div className="m-5 h-10">
+      {loading&& <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}
@@ -260,6 +274,8 @@ function Department() {
           }}
           columnData={columns}
           toolTipName={"Create Department"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

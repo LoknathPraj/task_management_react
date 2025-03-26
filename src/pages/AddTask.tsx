@@ -5,6 +5,7 @@ import moment from "moment";
 import ViewUserTask from "./ViewUserTask";
 import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
+import Loader from "../components/Loader";
 export default function AddTask() {
   const appState: any = useContext(AppContext);
   const [project, setProject] = useState("");
@@ -18,7 +19,7 @@ export default function AddTask() {
   const [workId, setWorkId] = useState<any>("");
   const [projectData, setProjectData] = useState<any>();
   const [taskTypeList,setTaskTypeList]=useState<Array<any>>([])
-
+  const [isLoading, setIsLoading] = useState(false);
   const resetForm = () => {
     setProject("");
     setWorkingHrs("");
@@ -103,6 +104,7 @@ export default function AddTask() {
   };
 
   async function addTask(payload: any) {
+    setIsLoading(true);
     try {
       const url = `${BASE_URL}${Endpoint.ADD_TASK}`;
       let headersList = {
@@ -125,9 +127,13 @@ export default function AddTask() {
     } catch (err) {
       showNotification("error", "Something went wrong");
     }
+    finally {
+      setIsLoading(false); 
+    }
   }
 
   async function updateTask(payload: any) {
+    setIsLoading(true); 
     try {
       const url = `${BASE_URL}${Endpoint.UPDATE_TASK}/${payload?._id}`;
       let headersList = {
@@ -149,6 +155,9 @@ export default function AddTask() {
       }
     } catch (err) {
       showNotification("error", "Something went wrong");
+    }
+    finally {
+      setIsLoading(false); 
     }
   }
 
@@ -189,6 +198,7 @@ if(project){
 console.log(taskTypeList)
   return (
     <div>
+       {isLoading&& <Loader />}
       <form className="p-4" onSubmit={_submitForm}>
         {/* <img src="/logo.png" className="m-auto" /> */}
         <div className="md:w-1/2 sm:w-full  m-auto text-left">

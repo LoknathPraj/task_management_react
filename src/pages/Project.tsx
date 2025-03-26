@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function Project() {
   interface Department {
@@ -30,8 +31,14 @@ function Project() {
   const [departmentData, setDepartmentData] = useState<
   Department[] | undefined
 >();
+const [loading, setLoading] = useState(false);
 const [editIsClicked, setEditIsClicked] = useState(false)
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllProjects(paginationModel?.page, paginationModel?.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -67,15 +74,21 @@ const [editIsClicked, setEditIsClicked] = useState(false)
   ];
 
   const axiosHandler = useAxios();
-  const getAllProjects = async () => {
+  const getAllProjects = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
-      const response = await axiosHandler.get(`/project/`);
+      const response = await axiosHandler.get(`/project/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setProjectList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); // Stop loader
+    }
   };
   useEffect(() => {
-    getAllProjects();
+    getAllProjects(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   useEffect(() => {
     if (Array.isArray(projectList)) {
@@ -141,7 +154,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     try {
       const response = await axiosHandler.get(`project/deleteProjectById/${id}`);
       showNotification("success", "Project deleted successfully!")
-      getAllProjects();
+      getAllProjects(paginationModel?.page, paginationModel?.pageSize);
       
     } catch (error: any) {
       showNotification("error", "Something went wrong")
@@ -256,7 +269,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
       }
       setIsModalOpen(!isModalOpen);
       setFormData({});
-      getAllProjects();
+      getAllProjects(paginationModel?.page, paginationModel?.pageSize);
       resetStates();
     }
   };
@@ -288,6 +301,7 @@ const [editIsClicked, setEditIsClicked] = useState(false)
     <>
    
       <div className="m-5 h-10">
+      {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}
@@ -298,6 +312,8 @@ const [editIsClicked, setEditIsClicked] = useState(false)
           }}
           columnData={columns}
           toolTipName={"Create Project"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

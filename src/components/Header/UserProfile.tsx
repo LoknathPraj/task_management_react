@@ -30,7 +30,7 @@ function UserProfile() {
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
   const [departmentData, setDepartmentData] = useState<any>();
-  const [loading, setLoading] = useState<any>(false)
+  const [loading, setLoading] = useState(false);
 
   const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!*@#$%]).{8,24}$/;
 

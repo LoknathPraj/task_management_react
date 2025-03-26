@@ -15,6 +15,8 @@ interface Props {
   columnData: any;
   onClickAction?: (type: string, row: any, id?: any) => void;
   showAction?: boolean;
+  rowCount?: number;
+  onPaginationChange?: (paginationModel: { page: number; pageSize: number }) => void;
   onClickAdd?: () => void;
   onClickDropdown?: (option: any) => void;
   onClickDropdown2?: (option: any) => void;
@@ -71,6 +73,8 @@ function GridTable({
   isLoading,
   selectedValue,
   selectedValue2,
+  onPaginationChange,
+  rowCount,
 }: Props) {
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState<Array<any>>([]);
@@ -300,6 +304,7 @@ function GridTable({
           getRowId={(row: any) => row?._id}
           className="bg-white rounded-none dark:border-strokedark dark:bg-boxdark "
           rows={rows}
+          rowCount={rowCount}
           // loading={isLoading}
           // slotProps={{
           //   loadingOverlay: {
@@ -318,7 +323,14 @@ function GridTable({
           // checkboxSelection={checkbox}
           disableColumnMenu={true}
           rowHeight={48}
-          // slots={{pagination:()=><>Hello</>}}
+          paginationMode="server"
+          onPaginationModelChange={(paginationModel) => {
+            const { page, pageSize } = paginationModel;
+            if (onPaginationChange) {
+              onPaginationChange({ page, pageSize });
+            }
+          }}
+        // slots={{pagination:()=><>Hello</>}}
         />
       </div>
     </div>

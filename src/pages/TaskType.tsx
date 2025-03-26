@@ -8,6 +8,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function TaskType() {
   interface Department {
@@ -31,7 +32,13 @@ function TaskType() {
     Department[] | undefined
   >();
   const [editIsClicked, setEditIsClicked] = useState(false);
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getAllTaskType(paginationModel.page, paginationModel.pageSize);
+  };
+  const [loading, setLoading] = useState(false);
   const columns: any[] = [
  
     {
@@ -73,12 +80,18 @@ function TaskType() {
     } catch (error: any) {}
   };
 
-  const getAllTaskType = async () => {
+  const getAllTaskType = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
-      const response = await axiosHandler.get(`/task-type/`);
+      const response = await axiosHandler.get(`/task-type/?page=${page + 1}&limit=${pageSize}`);
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setRows(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
 
 
@@ -86,7 +99,7 @@ function TaskType() {
 
   useEffect(() => {
     getAllProjects();
-    getAllTaskType()
+    getAllTaskType(paginationModel.page, paginationModel.pageSize)
   }, []);
 
   const requiredInputFields: any = {
@@ -126,7 +139,7 @@ function TaskType() {
         `task-type/deleteTaskTypeById/${id}`
       );
       showNotification("success", "Task Type deleted successfully!");
-      getAllTaskType();
+      getAllTaskType(paginationModel.page, paginationModel.pageSize);
     } catch (error: any) {
       showNotification("error", "Something went wrong");
     }
@@ -168,7 +181,7 @@ function TaskType() {
 
       setIsModalOpen(!isModalOpen);
     setFormData({});
-    getAllTaskType();
+    getAllTaskType(paginationModel.page, paginationModel.pageSize);
     resetStates();
     
     } catch (error: any) {
@@ -212,6 +225,7 @@ console.log(projectList)
   return (
     <>
       <div className="m-5 h-10">
+      {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE"]}
@@ -222,6 +236,8 @@ console.log(projectList)
           }}
           columnData={columns}
           toolTipName={"Create Task"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (

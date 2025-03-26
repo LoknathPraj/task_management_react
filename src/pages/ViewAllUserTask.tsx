@@ -3,6 +3,7 @@ import GridTable from "../components/GridTable";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
+import Loader from "../components/Loader";
 
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   interface Department {
@@ -26,6 +27,19 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   >();
   const [selectedValueInDropdown, setSelectedValueInDropdown] = useState<any>();
   const [selectedValueInDropdown2, setSelectedValueInDropdown2] = useState<any>();
+
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
+  const [loading, setLoading] = useState(false);
+
+  // Function to handle pagination changes
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getTask(paginationModel.page, paginationModel.pageSize);
+  };
+
+
+  console.log(paginationModel);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -76,10 +90,10 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   }, [insertedRecord]);
 
-  
+
 
   useEffect(() => {
-    getTask();
+    getTask(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   const axiosHandler = useAxios();
   const getUserDetails = async () => {
@@ -88,30 +102,30 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
       const data = response?.data?.data;
       setUserDetails(data);
-    } catch (error: any) {}
+    } catch (error: any) { }
   };
   useEffect(() => {
     getUserDetails();
   }, []);
 
-  
+
 
   const getAllDept = async () => {
     try {
       const response = await axiosHandler.post(`department/getDepartmentbyIds`);
       const data = response?.data?.data;
       setDepartmentData(data);
-    } catch (error: any) {}
+    } catch (error: any) { }
   };
   useEffect(() => {
     getAllDept();
   }, []);
 
   const departments = appState?.userDetails?.user?.department;
-  
-  
-  
-  
+
+
+
+
 
   const deptOptions = departments
 
@@ -124,40 +138,46 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
         : null;
     })
     .filter(Boolean);
-    
 
-const userOptions = userDetails?.map((item:any)=>{
 
-  if(appState?.userDetails?.adminId === item?.adminId)
-  return{
-    value:item?.id,
-    label:item?.name
-  }
-})
+  const userOptions = userDetails?.map((item: any) => {
 
-  const getTask = async () => {
-    const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 201) {
-      const data = await response?.json();
-      const taskList = data?.data;
-      const r = taskList?.reverse().map((e: any) => ({
-        ...e,
-        display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-        working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-      }));
+    if (appState?.userDetails?.adminId === item?.adminId)
+      return {
+        value: item?.id,
+        label: item?.name
+      }
+  })
 
-      setRows(r);
+ const getTask = async (page: any, pageSize: any) => {
+    setLoading(true);
+    try {
+      const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
+      const headersList = {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headersList,
+      });
+      if (response?.status === 201) {
+        const data = await response.json();
+        setTotalRows(data?.totalItems);
+        const taskList = data?.data;
+        const r = taskList?.map((e: any) => ({
+          ...e,
+          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+        }));
+        setRows(r);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
-
   const deleteTaskById = async (taskId: string) => {
     const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
     let headersList = {
@@ -231,7 +251,7 @@ const userOptions = userDetails?.map((item:any)=>{
     },
   ];
 
- 
+
   const getUsers = async () => {
     const url = `${BASE_URL}${Endpoint.getUserList}`;
     let headersList = {
@@ -245,56 +265,62 @@ const userOptions = userDetails?.map((item:any)=>{
     if (response?.status === 200) {
       const data = await response?.json();
       const lUserList = data?.data;
-      
+
       setUserList(lUserList);
-      
+
     }
   };
   useEffect(() => {
     getUsers();
   }, []);
 
-
   const getTaskByUserId = async (userId: any) => {
-    if (!userId) {
-      getTask();
-      return;
-    }
-    const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 200) {
-      const data = await response?.json();
-      const taskList = data?.data;
-      const r = taskList?.reverse().map((e: any) => ({
-        ...e,
-        display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-        working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-      }));
-
-      setRows(r);
+    setLoading(true);
+    try {
+      if (!userId) {
+        await getTask(paginationModel?.page, paginationModel?.pageSize);
+        return;
+      }
+      const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
+      const headersList = {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + appState?.userDetails?.token,
+      };
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headersList,
+      });
+      if (response?.status === 200) {
+        const data = await response.json();
+        const taskList = data?.data;
+        const r = taskList?.map((e: any) => ({
+          ...e,
+          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+        }));
+        setRows(r);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleDropdownChangeInGridTable = (option: any) => {
     setSelectedValueInDropdown(option);
   };
   const handleDropdownChangeInGridTable2 = (option: any) => {
-    
+
     setSelectedValueInDropdown2(option);
     getTaskByUserId(option?.value)
   };
- 
-  return ( 
+
+  return (
     <div>
-    
+
       <div className="w-full items-end"></div>
       <div className="m-5">
+      {loading && <Loader />}
         <GridTable
           // showAction={false}
           //   onClickAction={onClickAction}
@@ -313,8 +339,13 @@ const userOptions = userDetails?.map((item:any)=>{
           dropdownOptions2={userOptions}
           dropdownName={"department"}
           dropdownName2={"user"}
-         
-        
+
+
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
+
+
+
         />
       </div>
     </div>

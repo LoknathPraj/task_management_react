@@ -6,6 +6,7 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Modal from "../components/Modal";
 import moment from "moment";
+import Loader from "../components/Loader";
 
 export default function ViewUserTask({ insertedRecord, onUpdate, styleFromComponent }: any) {
   interface ProjectType {
@@ -27,8 +28,16 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
   const [newInsertedData, setNewInsertedData] = useState<any>(null);
   const [workId, setWorkId] = useState<any>("");
   const [projectData, setProjectData] = useState<any>();
-  const [taskTypeList,setTaskTypeList]=useState<Array<any>>([])
+  const [taskTypeList, setTaskTypeList] = useState<Array<any>>([])
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
+ const [loading, setLoading] = useState(false);
 
+  // Function to handle pagination changes
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getTaskById(paginationModel?.page, paginationModel?.pageSize);
+  };
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -70,35 +79,39 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
       if (insertedRecord?.isInserted) {
         setRows([lRecord, ...rows]);
       } else if (!insertedRecord?.isInserted) {
-        const index = rows.findIndex((e:any) => e?._id === lInsertedRecord?._id);
+        const index = rows.findIndex((e: any) => e?._id === lInsertedRecord?._id);
         const copyRow = [...rows];
         copyRow[index] = lRecord;
         setRows(copyRow);
       }
     }
   }, [insertedRecord]);
-  
-  
-
-
-const getAllProjects = async () => {
-      try {
-        const response = await axiosHandler.get(`project/`);
-        const data = response?.data?.data;
-        setProjectData(data);
-      } catch (error: any) {}
-    };
-    useEffect(() => {
-      getAllProjects();
-    }, []);
-
-    
 
 
 
-  const getTaskById = async () => {
-    const url = `${BASE_URL}${Endpoint.GET_WORKLOG_BY_USERID}`;
-    
+
+  const getAllProjects = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosHandler.get(`project/`);
+      const data = response?.data?.data;
+      setProjectData(data);
+    } catch (error: any) { }
+    finally {
+      setLoading(false); 
+    }
+  };
+  useEffect(() => {
+    getAllProjects();
+  }, []);
+
+
+
+
+
+  const getTaskById = async (page: any, pageSize: any) => {
+    const url = `${BASE_URL}${Endpoint.GET_WORKLOG_BY_USERID}?page=${page + 1}&limit=${pageSize}`;
+
 
     let headersList = {
       "Content-Type": "application/json",
@@ -110,18 +123,19 @@ const getAllProjects = async () => {
     });
     if (response?.status === 201) {
       const data = await response?.json();
+      setTotalRows(data?.totalItems)
       const taskList = data?.data;
-      const r = taskList?.reverse().map((e: any) => ({
-        ...e,
-        display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-        working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-      }));
+        const r = taskList?.map((e: any) => ({
+          ...e,
+          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+        }));
 
       setRows(r);
     }
   };
   useEffect(() => {
-    getTaskById();
+    getTaskById(paginationModel?.page, paginationModel?.pageSize);
   }, []);
   const deleteTaskById = async (taskId: string) => {
     const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
@@ -141,12 +155,12 @@ const getAllProjects = async () => {
   };
 
   const onClickAction = (value: any, row?: any, _id?: any) => {
-    
+
 
     if (value === "DELETE") {
       deleteTaskById(row?._id);
     } else if (value === "EDIT") {
-     handleUpdate(row)
+      handleUpdate(row)
       setisModalOpen(true)
     }
   };
@@ -320,25 +334,25 @@ const getAllProjects = async () => {
     }
   };
 
-const getAllTaskTypeByprojectId = async () => {
-  try {
-    const response = await axiosHandler.get(`/task-type/`+project);
-    const data = response?.data?.data;
-    setTaskTypeList(data);
-  } catch (error: any) {}
-};
-useEffect(()=>{
-if(project){
-  getAllTaskTypeByprojectId()
-}
-},[project])
+  const getAllTaskTypeByprojectId = async () => {
+    try {
+      const response = await axiosHandler.get(`/task-type/` + project);
+      const data = response?.data?.data;
+      setTaskTypeList(data);
+    } catch (error: any) { }
+  };
+  useEffect(() => {
+    if (project) {
+      getAllTaskTypeByprojectId()
+    }
+  }, [project])
 
   return (
     <div>
       <div className="m-5"
-      style={styleFromComponent}
+        style={styleFromComponent}
       >
-       
+           {loading && <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}

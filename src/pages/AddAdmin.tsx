@@ -9,6 +9,7 @@ import { designationOptions } from "../utils/index";
 import { showNotification } from "../components/Toast";
 import Dropdown from "../components/Dropdown";
 import { BASE_URL } from "../constant";
+import Loader from "../components/Loader";
 
 function AddAdmin() {
   const navigate = useNavigate();
@@ -22,10 +23,15 @@ function AddAdmin() {
   const [validPwd, setValidPwd] = useState(true);
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
-  const [loading, setLoading] = useState<any>(false);
+  const [loading, setLoading] = useState(false);
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
-
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
+    setPaginationModel(paginationModel);
+    getUserDetails(paginationModel.page, paginationModel.pageSize);
+  };
   const columns: any[] = [
     {
       field: "s_no",
@@ -93,16 +99,22 @@ function AddAdmin() {
   }, [pwd, matchPwd]);
 
   const axiosHandler = useAxios();
-  const getUserDetails = async () => {
+  const getUserDetails = async (page: any, pageSize: any) => {
+    setLoading(true);
     try {
-      const response = await axiosHandler.get(`auth/getUserList`);
+      const response = await axiosHandler.get(`auth/getUserList?page=${page + 1}&limit=${pageSize}`);
 
       const data = response?.data?.data;
+      const { totalItems } = response?.data;
       setUserList(data);
+      setTotalRows(totalItems);
     } catch (error: any) {}
+    finally {
+      setLoading(false); 
+    }
   };
   useEffect(() => {
-    getUserDetails();
+    getUserDetails(paginationModel?.page, paginationModel?.pageSize);
   }, []);
 
   const getAllDept = async () => {
@@ -278,7 +290,7 @@ function AddAdmin() {
         setLoading(false);
         showNotification("success", "Admin deleted successfully!");
       }
-      getUserDetails();
+      getUserDetails(paginationModel?.page, paginationModel?.pageSize);
     } catch (error: any) {
       setLoading(false);
       showNotification("error", "Something went wrong");
@@ -359,7 +371,7 @@ function AddAdmin() {
         body: JSON.stringify(data),
       });
       if (response) {
-        getUserDetails();
+        getUserDetails(paginationModel?.page, paginationModel?.pageSize);
         setLoading(false);
         showNotification("success", "Admin updated successfully!");
       }
@@ -397,13 +409,14 @@ function AddAdmin() {
       setLoading(false)
       setIsModalOpen(!isModalOpen);
       resetStates();
-      getUserDetails();
+      getUserDetails(paginationModel?.page, paginationModel?.pageSize);
     }
   };
 
   return (
     <>
       <div className="m-5 h-10">
+      {loading&& <Loader />}
         <GridTable
           onClickAction={onClickAction}
           actions={["DELETE", "EDIT"]}
@@ -414,6 +427,8 @@ function AddAdmin() {
           }}
           columnData={columns}
           toolTipName={"Create Admin"}
+          onPaginationChange={handlePaginationChange}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && (
