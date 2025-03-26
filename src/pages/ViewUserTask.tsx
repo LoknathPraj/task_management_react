@@ -358,8 +358,8 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
           actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
-          toolTipName={""}
           rowCount={totalRows}
+          toolTipName={""}
         />
       </div>
       {isModalOpen && <Modal
