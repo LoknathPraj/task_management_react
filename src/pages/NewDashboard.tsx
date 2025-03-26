@@ -42,6 +42,7 @@ const NewDashboard: React.FC = () => {
     getAllDept();
     getTask();
     getAllProjects();
+    
     getUserDetails();
   }, [paginationModel, year]);
   const getAllUsersTotalWorkHoursForMonthAndDay = async (month: number, year: number, page: number, pageSize: number) => {
