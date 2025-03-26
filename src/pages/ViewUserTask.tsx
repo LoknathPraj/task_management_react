@@ -359,6 +359,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
           rowData={rows}
           columnData={columns}
           toolTipName={""}
+          rowCount={totalRows}
         />
       </div>
       {isModalOpen && <Modal
