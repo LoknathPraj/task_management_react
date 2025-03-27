@@ -93,9 +93,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
   const getAllProjects = async () => {
     setLoading(true);
     try {
-      const response = await axiosHandler.get(`project/`);
-      console.log('response: ', response);
-      
+      const response = await axiosHandler.get(`project/`);      
       const data = response?.data?.data;
       setProjectData(data);
     } catch (error: any) { }

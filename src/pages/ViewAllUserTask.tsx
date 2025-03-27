@@ -38,8 +38,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     getTask(paginationModel.page, paginationModel.pageSize);
   };
 
-
-  console.log(paginationModel);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -140,7 +138,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     })
     .filter(Boolean);
 
-    console.log('deptOptions: ', deptOptions);
   const userOptions = userDetails?.map((item: any) => {
 
     if (appState?.userDetails?.adminId === item?.adminId)
@@ -149,7 +146,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
         label: item?.name
       }
   })
-  console.log('userOptions: ', userOptions);
   const getTask = async (page: any, pageSize: any) => {
     setLoading(true);
     try {
@@ -164,7 +160,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       });
       if (response?.status === 201) {
         const data = await response.json();
-        console.log(data);
         setTotalRows(data?.totalItems);
         const taskList = data?.data;
         const r = taskList?.map((e: any) => ({

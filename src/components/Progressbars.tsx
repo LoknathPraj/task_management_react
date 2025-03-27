@@ -114,7 +114,6 @@ const Progressbars: React.FC<ProgressbarsProps> = ({ height }) => {
   const [loading, setLoading] = useState(false);
   const [yearlyStatistics, setYearlyStatistics] = useState<any>([]);
   const [seriesName, setSeriesName] = useState<string>("Record"); 
-  console.log('yearlyStatistics: ', yearlyStatistics);
   const axiosHandler = useAxios();
   const appState: any = useContext(AppContext);
 

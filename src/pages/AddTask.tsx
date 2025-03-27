@@ -195,7 +195,6 @@ if(project){
   getAllTaskTypeByprojectId()
 }
 },[project])
-console.log(taskTypeList)
   return (
     <div>
        {isLoading&& <Loader />}
