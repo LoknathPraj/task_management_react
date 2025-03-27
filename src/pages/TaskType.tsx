@@ -176,7 +176,6 @@ function TaskType() {
         headers: headersList,
         body: JSON.stringify(data),
       });
-      console.log("response::", response);
       showNotification("success", "Task Type created successfully!");
 
       setIsModalOpen(!isModalOpen);
@@ -221,7 +220,6 @@ function TaskType() {
       handleSubmit();
     }
   };
-console.log(projectList)
   return (
     <>
       <div className="m-5 h-10">

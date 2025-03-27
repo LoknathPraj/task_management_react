@@ -38,8 +38,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     getTask(paginationModel.page, paginationModel.pageSize);
   };
 
-
-  console.log(paginationModel);
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
   //       ...team,
@@ -127,6 +125,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
 
 
+ 
   const deptOptions = departments
 
     ?.map((deptId: string) => {
@@ -139,7 +138,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     })
     .filter(Boolean);
 
-
   const userOptions = userDetails?.map((item: any) => {
 
     if (appState?.userDetails?.adminId === item?.adminId)
@@ -148,8 +146,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
         label: item?.name
       }
   })
-
- const getTask = async (page: any, pageSize: any) => {
+  const getTask = async (page: any, pageSize: any) => {
     setLoading(true);
     try {
       const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
@@ -193,10 +190,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       setRows(lRow);
     }
   };
-
-
-
-
 
   const onClickAction = (value: any, row?: any, _id?: any) => {
     if (value === "DELETE") {
@@ -315,12 +308,39 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     getTaskByUserId(option?.value)
   };
 
+
+
+  const downloadExcelData = async () => {
+    const url = `${BASE_URL}worklog/downloadExcel?departmentIds=${selectedValueInDropdown?.value}&userId=${selectedValueInDropdown2?.value}`;
+    let headersList = {
+      "Content-Type": "application/json",
+      Authorization: "bearer " + appState?.userDetails?.token,
+    };
+    if (selectedValueInDropdown?.value && selectedValueInDropdown2?.value) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headersList,
+      });
+      if (response?.status === 200) {
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "worklog.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+    }
+
+
+  }
   return (
     <div>
 
       <div className="w-full items-end"></div>
       <div className="m-5">
-      {loading && <Loader />}
+        {loading && <Loader />}
         <GridTable
           // showAction={false}
           //   onClickAction={onClickAction}
@@ -339,13 +359,9 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           dropdownOptions2={userOptions}
           dropdownName={"department"}
           dropdownName2={"user"}
-
-
           onPaginationChange={handlePaginationChange}
           rowCount={totalRows}
-
-
-
+          onClickExport={downloadExcelData}
         />
       </div>
     </div>

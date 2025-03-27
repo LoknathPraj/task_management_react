@@ -92,13 +92,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <ul className="mb-6 flex flex-col gap-1.5">
               {userRole == 10001 ? (
                 <ul>
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/dashboard"
                       className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
                     >
                       <RxDashboard className="w-5 h-5 " />
                       Dashboard
+                    </NavLink>
+                  </li> */}
+                  <li>
+                    <NavLink
+                      to="/new-dashboard"
+                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+                    >
+                      <RxDashboard className="w-5 h-5 " />
+                      New Dashboard
                     </NavLink>
                   </li>
                   <li>
