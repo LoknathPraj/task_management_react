@@ -140,7 +140,6 @@ const NewDashboard: React.FC = () => {
   };
 
   const filteredData = userList?.filter((user: any) => user.role === 10000);
-  console.log(' filteredData: ',  filteredData);
   const userCount = filteredData?.length || 0;
 
   const countUniqueUsernames = (tasksToday: any) => {
