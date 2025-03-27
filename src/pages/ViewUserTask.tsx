@@ -358,6 +358,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
           actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
+          rowCount={totalRows}
           toolTipName={""}
         />
       </div>
