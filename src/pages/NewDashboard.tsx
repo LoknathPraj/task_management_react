@@ -19,7 +19,7 @@ const NewDashboard: React.FC = () => {
   const [userList, setUserList] = useState<any>();
   const [rows, setRows] = useState<Array<any>>([]);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const [totalRows, setTotalRows] = useState(0);
+  const [totalUser, setTotalUser] = useState(0);
   const [location, setLocation] = useState(0);
   const [totalDept, setTotalDept] = useState(0);
   const [totalProject, setTotalProject] = useState(0);
@@ -51,7 +51,6 @@ const NewDashboard: React.FC = () => {
         `/worklog/getAllUsersTotalWorkHoursForMonthAndDay?month=${month}&year=${year}&page=${page + 1}&limit=${pageSize}`
       );
       setTotalWorkHours(response.data.data);
-      setTotalRows(response.data.totalItems);
     } catch (error) {
       console.error("Error fetching total work hours:", error);
     }
@@ -127,7 +126,10 @@ const NewDashboard: React.FC = () => {
   const getUserDetails = async () => {
     try {
       const response = await axiosHandler.get(`auth/getUserList`);
-      setUserList(response?.data?.data);
+      const { data } = response?.data;
+      const { totalItems } = response?.data;
+      setUserList(data);
+      setTotalUser(totalItems);
     } catch (error) {
       console.error("Error fetching user details:", error);
     }
@@ -140,7 +142,8 @@ const NewDashboard: React.FC = () => {
   };
 
   const filteredData = userList?.filter((user: any) => user.role === 10000);
-  const userCount = filteredData?.length || 0;
+  // const userCount = filteredData?.length || 0;
+  const userCount = totalUser || 0;
 
   const countUniqueUsernames = (tasksToday: any) => {
     const uniqueUsernames = new Set(tasksToday?.map((worklog: any) => worklog?.username));
@@ -237,7 +240,7 @@ const NewDashboard: React.FC = () => {
 
       <div className="flex flex-wrap gap-4 mb-6 ml-2">
         <div className="flex-1 min-w-[200px] max-w-[250px]">
-          <CardDataStats total={totalRows} title="Users :">
+          <CardDataStats total={totalUser} title="Users :">
             <People className="text-blue-600" />
           </CardDataStats>
         </div>
@@ -273,7 +276,7 @@ const NewDashboard: React.FC = () => {
             columnData={columns}
             toolTipName={"Create User"}
             onPaginationChange={handlePaginationChange}
-            rowCount={totalRows}
+            rowCount={totalUser}
           />
         </div>
         <div className="w-120 h-240 rounded-sm border border-stroke text-xs bg-white shadow-default dark:border-strokedark dark:bg-boxdark col-span-1 flex flex-col items-center justify-center">

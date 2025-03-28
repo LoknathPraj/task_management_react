@@ -3,6 +3,7 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import useAxios from "../context/useAxios";
 import { AppContext } from "../context/AppContext";
+import Loader from "./Loader";
 
 interface ProgressbarsProps {
   height?: number;
@@ -164,6 +165,7 @@ const Progressbars: React.FC<ProgressbarsProps> = ({ height }) => {
 
   return (
     <div>
+       {loading && <Loader />}
       <div className="col-span-12 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="mb-4 justify-between gap-4 sm:flex">
           <div className="mt-4 ml-4">
