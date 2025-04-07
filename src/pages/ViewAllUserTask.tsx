@@ -311,30 +311,33 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
 
   const downloadExcelData = async () => {
+    if (!selectedValueInDropdown?.value || !selectedValueInDropdown2?.value) {
+      return; 
+    }
+  
     const url = `${BASE_URL}worklog/downloadExcel?departmentIds=${selectedValueInDropdown?.value}&userId=${selectedValueInDropdown2?.value}`;
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
     };
-    if (selectedValueInDropdown?.value && selectedValueInDropdown2?.value) {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: headersList,
-      });
+  
+    try {
+      const response = await fetch(url, { method: "GET", headers: headersList });
       if (response?.status === 200) {
         const blob = await response.blob();
         const link = document.createElement("a");
+        const timestamp = new Date().toISOString().split('T')[0]; // To add a timestamp to the file name
         link.href = URL.createObjectURL(blob);
-        link.download = "worklog.xlsx";
+        link.download = `worklog_${timestamp}.xlsx`;  // Updated file name with timestamp
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       }
-
+    } catch (error) {
+      console.error("Error downloading Excel:", error);
     }
-
-
-  }
+  };
+  
   return (
     <div>
 
@@ -362,6 +365,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           onPaginationChange={handlePaginationChange}
           rowCount={totalRows}
           onClickExport={downloadExcelData}
+          exportButtonDisabled={!selectedValueInDropdown?.value || !selectedValueInDropdown2?.value}
         />
       </div>
     </div>
