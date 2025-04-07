@@ -93,7 +93,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
   const getAllProjects = async () => {
     setLoading(true);
     try {
-      const response = await axiosHandler.get(`project/`);      
+      const response = await axiosHandler.get(`project/${appState?.userDetails?.user?.department?.[0]}`);      
       const data = response?.data?.data;
       setProjectData(data);
     } catch (error: any) { }
@@ -360,6 +360,7 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
           columnData={columns}
           rowCount={totalRows}
           toolTipName={""}
+          onPaginationChange={handlePaginationChange}
         />
       </div>
       {isModalOpen && <Modal

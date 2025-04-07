@@ -37,7 +37,8 @@ interface Props {
   dropdownName2?: any;
   dropdownOptions2?: any;
   selectedValue2?: any;
-  isLoading?: boolean
+  isLoading?: boolean;
+  exportButtonDisabled?: boolean;
 
 
   // checkbox:boolean
@@ -82,6 +83,7 @@ function GridTable({
   const [cols, setCols] = useState<Array<any>>([]);
   const [searchString, setSearchString] = useState<string>("");
   const [filterData, setFilterData] = useState<string>("");
+  console.log('filterData: ', filterData);
 
 
   useEffect(() => {
@@ -134,7 +136,7 @@ function GridTable({
     }
 
   };
-
+const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
       <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
@@ -241,19 +243,19 @@ function GridTable({
           </div>
           <div>
             {onClickExport && (
-              <>
-                <Tooltip title={toolTipName}>
-                  <div
-                    className="cursor-pointer w-25 p-2 h-10 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
-                    onClick={() => {
+              <Tooltip title={toolTipName}>
+                <div
+                  className={`cursor-pointer w-25 p-2 h-10 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg ${isExportDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => {
+                    if (!isExportDisabled) {
                       onClickExport && onClickExport();
-                    }}
-                  >
-                    <span className="mr-1">Export</span>
-                    <FaPlus className="h-3 w-3" />
-                  </div>
-                </Tooltip>
-              </>
+                    }
+                  }}
+                >
+                  <span className="mr-1">Export</span>
+                  <FaPlus className="h-3 w-3" />
+                </div>
+              </Tooltip>
             )}
           </div>
         </div>
