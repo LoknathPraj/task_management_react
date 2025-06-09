@@ -22,21 +22,16 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   const [userList, setUserList] = useState([]);
   const [departmentValue, setDepartmentValue] = useState<any>();
   const [userDetails, setUserDetails] = useState<any>();
-  const [departmentData, setDepartmentData] = useState<
-    Department[] | undefined
-  >();
+  const [departmentData, setDepartmentData] = useState<any[]>([]);
   const [selectedValueInDropdown, setSelectedValueInDropdown] = useState<any>();
   const [selectedValueInDropdown2, setSelectedValueInDropdown2] = useState<any>();
-
+  const [selectedValueInDropdown3, setSelectedValueInDropdown3] = useState<any>();
+  const [projectData, setProjectData] = useState<any>();
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
   const [loading, setLoading] = useState(false);
-
-  // Function to handle pagination changes
-  const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
-    setPaginationModel(paginationModel);
-    getTask(paginationModel.page, paginationModel.pageSize);
-  };
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   // const rowData: any = teamState?.teamList?.map(
   //     (team: any, index: number) => ({
@@ -88,25 +83,26 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
     }
   }, [insertedRecord]);
 
-
-
-  useEffect(() => {
-    getTask(paginationModel?.page, paginationModel?.pageSize);
-  }, []);
   const axiosHandler = useAxios();
   const getUserDetails = async () => {
     try {
-      const response = await axiosHandler.get(`auth/getUserList`);
-
-      const data = response?.data?.data;
-      setUserDetails(data);
-    } catch (error: any) { }
+      const res = await axiosHandler.get(`auth/getUserList?limit=2000`);
+      setUserDetails(res?.data?.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
-  useEffect(() => {
-    getUserDetails();
-  }, []);
 
-
+  const getAllProjects = async () => {
+    try {
+      const res = await axiosHandler.get(
+        `project/${appState?.userDetails?.user?.department?.[0]}`
+      );
+      setProjectData(res?.data?.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const getAllDept = async () => {
     try {
@@ -115,66 +111,69 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       setDepartmentData(data);
     } catch (error: any) { }
   };
-  useEffect(() => {
-    getAllDept();
-  }, []);
+
 
   const departments = appState?.userDetails?.user?.department;
 
+  useEffect(() => {
+    if (departments?.length) {
+      const defaultDeptId = departments[0];
+      setDepartmentValue(defaultDeptId);
+      setSelectedValueInDropdown({ value: defaultDeptId, label: "" });
+    }
+  }, [departments]);
 
+  const deptOptions = departments?.map((deptId: string) => {
+    const dept = departmentData.find((d) => d.id === deptId);
+    return dept ? { value: dept.id, label: dept.name } : null;
+  }).filter(Boolean);
 
+  const userOptions = userDetails?.filter((item: any) =>
+    appState?.userDetails?.adminId === item?.adminId
+  ).map((item: any) => ({
+    value: item?.id,
+    label: item?.name,
+  }));
 
+  const projectOptions = projectData?.filter((proj: any) =>
+    appState?.userDetails?.adminId === proj?.adminId
+  ).map((proj: any) => ({
+    value: proj.id,
+    label: proj.name,
+  }));
 
- 
-  const deptOptions = departments
-
-    ?.map((deptId: string) => {
-      const department = departmentData?.find(
-        (dept: Department) => dept.id === deptId
-      );
-      return department
-        ? { value: department.id, label: department.name }
-        : null;
-    })
-    .filter(Boolean);
-
-  const userOptions = userDetails?.map((item: any) => {
-
-    if (appState?.userDetails?.adminId === item?.adminId)
-      return {
-        value: item?.id,
-        label: item?.name
-      }
-  })
-  const getTask = async (page: any, pageSize: any) => {
+  const getTask = async (page: number, pageSize: number, userId?: string, projectId?: string) => {
     setLoading(true);
     try {
-      const url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
-      const headersList = {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + appState?.userDetails?.token,
-      };
-      const response = await fetch(url, {
+      let url = `${BASE_URL}${Endpoint.GET_WORKLOG}?page=${page + 1}&limit=${pageSize}`;
+      if (userId) url += `&userId=${userId}`;
+      if (projectId) url += `&projectId=${projectId}`;
+
+      const res = await fetch(url, {
         method: "GET",
-        headers: headersList,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "bearer " + appState?.userDetails?.token,
+        },
       });
-      if (response?.status === 201) {
-        const data = await response.json();
-        setTotalRows(data?.totalItems);
-        const taskList = data?.data;
-        const r = taskList?.map((e: any) => ({
+
+      if (res.status === 201) {
+        const data = await res.json();
+        setTotalRows(data.totalItems);
+        const r = data.data?.map((e: any) => ({
           ...e,
-          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+          display_working_date: new Date(e.working_date).toLocaleDateString(),
+          working_hrs_mins: `${e.working_hrs}hrs ${e.working_mins}mins`,
         }));
         setRows(r);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
   const deleteTaskById = async (taskId: string) => {
     const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
     let headersList = {
@@ -245,70 +244,83 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   ];
 
 
-  const getUsers = async () => {
-    const url = `${BASE_URL}${Endpoint.getUserList}`;
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 200) {
-      const data = await response?.json();
-      const lUserList = data?.data;
+  // const getUsers = async () => {
+  //   const url = `${BASE_URL}${Endpoint.getUserList}`;
+  //   let headersList = {
+  //     "Content-Type": "application/json",
+  //     Authorization: "bearer " + appState?.userDetails?.token,
+  //   };
+  //   const response = await fetch(url, {
+  //     method: "GET",
+  //     headers: headersList,
+  //   });
+  //   if (response?.status === 200) {
+  //     const data = await response?.json();
+  //     const lUserList = data?.data;
 
-      setUserList(lUserList);
+  //     setUserList(lUserList);
 
-    }
-  };
+  //   }
+  // };
+  // useEffect(() => {
+  //   getUsers();
+  // }, []);
   useEffect(() => {
-    getUsers();
+    getUserDetails();
+    getAllDept();
+    getAllProjects();
+    getTask(paginationModel.page, paginationModel.pageSize);
   }, []);
+  // const getTaskByUserId = async (userId: any) => {
+  //   setLoading(true);
+  //   try {
+  //     if (!userId) {
+  //       await getTask(paginationModel?.page, paginationModel?.pageSize);
+  //       return;
+  //     }
+  //     const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
+  //     const headersList = {
+  //       "Content-Type": "application/json",
+  //       Authorization: "bearer " + appState?.userDetails?.token,
+  //     };
+  //     const response = await fetch(url, {
+  //       method: "GET",
+  //       headers: headersList,
+  //     });
+  //     if (response?.status === 200) {
+  //       const data = await response.json();
+  //       const taskList = data?.data;
+  //       const r = taskList?.map((e: any) => ({
+  //         ...e,
+  //         display_working_date: new Date(e.working_date)?.toLocaleDateString(),
+  //         working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
+  //       }));
+  //       setRows(r);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handlePaginationChange = (model: any) => {
+    setPaginationModel(model);
+    getTask(model.page, model.pageSize, selectedUserId, selectedProjectId);
+  };
 
-  const getTaskByUserId = async (userId: any) => {
-    setLoading(true);
-    try {
-      if (!userId) {
-        await getTask(paginationModel?.page, paginationModel?.pageSize);
-        return;
-      }
-      const url = `${BASE_URL}${Endpoint.filterWorkLogByUserId}/${userId}`;
-      const headersList = {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + appState?.userDetails?.token,
-      };
-      const response = await fetch(url, {
-        method: "GET",
-        headers: headersList,
-      });
-      if (response?.status === 200) {
-        const data = await response.json();
-        const taskList = data?.data;
-        const r = taskList?.map((e: any) => ({
-          ...e,
-          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-        }));
-        setRows(r);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleDropdownChangeInGridTable = (option: any) => {
-    setSelectedValueInDropdown(option);
-  };
   const handleDropdownChangeInGridTable2 = (option: any) => {
-
+    const userId = option?.value || "";
     setSelectedValueInDropdown2(option);
-    getTaskByUserId(option?.value)
+    setSelectedUserId(userId);
+    getTask(paginationModel.page, paginationModel.pageSize, userId, selectedProjectId);
   };
 
-
+  const handleProjectDropdownChange = (option: any) => {
+    const projectId = option?.value || "";
+    setSelectedValueInDropdown3(option);
+    setSelectedProjectId(projectId);
+    getTask(paginationModel.page, paginationModel.pageSize, selectedUserId, projectId);
+  };
 
   const downloadExcelData = async () => {
     const url = `${BASE_URL}worklog/downloadExcel?departmentIds=${selectedValueInDropdown?.value}&userId=${selectedValueInDropdown2?.value}`;
@@ -347,18 +359,20 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           // actions={["DELETE", "EDIT"]}
           rowData={rows}
           columnData={columns}
-          filterDropdownData={userList}
-          filterDropdownData2={userList}
-          onClickDropdown={handleDropdownChangeInGridTable}
           onClickDropdown2={handleDropdownChangeInGridTable2}
+          onClickDropdown3={handleProjectDropdownChange}
           selectedValue={selectedValueInDropdown}
           selectedValue2={selectedValueInDropdown2}
+          selectedValue3={selectedValueInDropdown3}
           dropdownLabel={"Departments"}
           dropdownLabel2={"Users"}
+          dropdownLabel3={"Projects"}
           dropdownOptions={deptOptions}
           dropdownOptions2={userOptions}
+          dropdownOptions3={projectOptions}
           dropdownName={"department"}
           dropdownName2={"user"}
+          dropdownName3={"project"}
           onPaginationChange={handlePaginationChange}
           rowCount={totalRows}
           onClickExport={downloadExcelData}

@@ -81,12 +81,12 @@ const Dropdown: React.FC<DropdownProps> = ({
     }),
     menu: (provided: any) => ({
       ...provided,
-      maxHeight: "120px",
+      maxHeight: "250px",
       overflowY: "auto",
     }),
     menuList: (provided: any) => ({
       ...provided,
-      maxHeight: "120px",
+      maxHeight: "250px",
       overflowY: "auto",
     }),
   };
