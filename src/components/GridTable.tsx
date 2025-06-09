@@ -20,6 +20,7 @@ interface Props {
   onClickAdd?: () => void;
   onClickDropdown?: (option: any) => void;
   onClickDropdown2?: (option: any) => void;
+  onClickDropdown3?: (option: any) => void;
   onClickExport?: () => void;
   onClickFilter?: (id?: string) => void;
   topActionButtonTitle?: string;
@@ -28,16 +29,22 @@ interface Props {
   actions?: Array<"DELETE" | "EDIT" | "VIEW">;
   filterDropdownData?: Array<any>;
   filterDropdownData2?: Array<any>;
+  filterDropdownData3?: Array<any>;
   dropdownLabel?: any;
   dropdownName?: any;
   dropdownOptions?: any;
   dropdownState?: any;
   selectedValue?: any;
   dropdownLabel2?: any;
+  dropdownLabel3?: any;
   dropdownName2?: any;
+  dropdownName3?: any;
   dropdownOptions2?: any;
+  dropdownOptions3?: any;
   selectedValue2?: any;
-  isLoading?: boolean
+  selectedValue3?: any;
+  isLoading?: boolean;
+  exportButtonDisabled?: boolean;
 
 
   // checkbox:boolean
@@ -58,6 +65,7 @@ function GridTable({
   onClickExport,
   onClickFilter,
   onClickDropdown,
+  onClickDropdown3,
   onClickDropdown2,
   filterButtonTitle = "Filters",
   topActionButtonTitle = "Add",
@@ -65,8 +73,10 @@ function GridTable({
   filterDropdownData = [],
   filterDropdownData2 = [],
   dropdownLabel,
+  dropdownLabel3,
   dropdownName,
   dropdownOptions,
+  dropdownOptions3,
   dropdownState,
   dropdownLabel2,
   dropdownName2,
@@ -74,6 +84,7 @@ function GridTable({
   isLoading,
   selectedValue,
   selectedValue2,
+  selectedValue3,
   onPaginationChange,
   rowCount,
 
@@ -82,6 +93,7 @@ function GridTable({
   const [cols, setCols] = useState<Array<any>>([]);
   const [searchString, setSearchString] = useState<string>("");
   const [filterData, setFilterData] = useState<string>("");
+  console.log('filterData: ', filterData);
 
 
   useEffect(() => {
@@ -134,7 +146,7 @@ function GridTable({
     }
 
   };
-
+  const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
       <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
@@ -154,19 +166,19 @@ function GridTable({
             <div className="w-5 h-5 mr-2" />
           )}
           <div
-            className="border-l border-bgray py-2.5 px-3 "
+            className="border-l border-bgray py-2.5"
             onClick={() => requestSearch(searchString)}
           >
             <IoSearchSharp className="h-5 w-5 " />
           </div>
         </div>
 
-        <div className="grid grid-cols-5">
+        <div className="flex justify-between">
           <div>
             {onClickDropdown && (
               <>
 
-                <div>
+                <div className="ml-2">
 
 
                   <Dropdown
@@ -184,11 +196,33 @@ function GridTable({
               </>
             )}
           </div>
+              <div>
+              {onClickDropdown3 && (
+                <>
+
+                  <div className="ml-2">
+
+
+                    <Dropdown
+                      submitRef={true}
+                      multiple={false}
+                      defaultValue={selectedValue3 || null}
+                      options={dropdownOptions3}
+                      handleChange={onClickDropdown3}
+                      defaultLabel={dropdownLabel3}
+                      label=""
+                      className="mb-[-22px] w-[12.5rem]"
+                    />
+                  </div>
+
+                </>
+              )}
+            </div>
           <div>
             {onClickDropdown2 && (
               <>
                 <Tooltip title={"Apply Filters"}>
-                  <div className="ml-20">
+                  <div className="ml-2">
                     <Dropdown
                       submitRef={true}
                       multiple={false}
@@ -205,12 +239,13 @@ function GridTable({
               </>
             )}
           </div>
+       
           <div>
             {onClickFilter && (
               <>
                 <Tooltip title={"Apply Filters"}>
                   <div
-                    className="cursor-pointer w-25 h-9 ml-12 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-25 h-9 ml-2 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickFilter && onClickFilter();
                     }}
@@ -227,7 +262,7 @@ function GridTable({
               <>
                 <Tooltip title={toolTipName}>
                   <div
-                    className="cursor-pointer w-20 h-9 ml-12 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
+                    className="cursor-pointer w-20 h-9 ml-2 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
                     onClick={() => {
                       onClickAdd && onClickAdd();
                     }}
@@ -241,19 +276,19 @@ function GridTable({
           </div>
           <div>
             {onClickExport && (
-              <>
-                <Tooltip title={toolTipName}>
-                  <div
-                    className="cursor-pointer w-25 p-2 h-10 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg"
-                    onClick={() => {
+              <Tooltip title={toolTipName}>
+                <div
+                  className={`cursor-pointer w-25 ml-2 p-2 h-10 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg ${isExportDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => {
+                    if (!isExportDisabled) {
                       onClickExport && onClickExport();
-                    }}
-                  >
-                    <span className="mr-1">Export</span>
-                    <FaPlus className="h-3 w-3" />
-                  </div>
-                </Tooltip>
-              </>
+                    }
+                  }}
+                >
+                  <span className="mr-1">Export</span>
+                  <FaPlus className="h-3 w-3" />
+                </div>
+              </Tooltip>
             )}
           </div>
         </div>
@@ -340,7 +375,6 @@ function GridTable({
 }
 
 export default GridTable;
-
 interface OptionProps {
   onClick: (type: any) => void;
   actions: Array<"DELETE" | "EDIT" | "VIEW">;
