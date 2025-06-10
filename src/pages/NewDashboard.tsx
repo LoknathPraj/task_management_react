@@ -26,65 +26,68 @@ const NewDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const axiosHandler = useAxios();
   const appState = useContext(AppContext);
-  const [projectList, setProjectList] = useState<any>();
-  const [dates, setDates] = useState({ startDate: '', endDate: '' });
-  const [searchButtonClicked, setSearchButtonClicked] = useState(false);
-  const [yearlyStatistics, setYearlyStatistics] = useState<any>();
-  const [year, setYear] = useState<number>(2025);
-  const [totalWorkHours, setTotalWorkHours] = useState<any[]>([]);
+  const [projectList, setProjectList] = useState<any[]>([]);
+const [totalRows, setTotalRows] = useState(0);
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
 
   useEffect(() => {
+    fetchAllData();
+  }, [paginationModel]);
+
+  const fetchAllData = () => {
     getAllUsersTotalWorkHoursForMonthAndDay(currentMonth, currentYear, paginationModel.page, paginationModel.pageSize);
-    getTodaysWorklog(paginationModel.page, paginationModel.pageSize);
+    getTodaysWorklog();
     getAllDept();
     getTask();
     getAllProjects();
-    
     getUserDetails();
-  }, [paginationModel, year]);
+  };
+
   const getAllUsersTotalWorkHoursForMonthAndDay = async (month: number, year: number, page: number, pageSize: number) => {
     try {
+      setLoading(true);
       const response = await axiosHandler.get(
         `/worklog/getAllUsersTotalWorkHoursForMonthAndDay?month=${month}&year=${year}&page=${page + 1}&limit=${pageSize}`
       );
-      setTotalWorkHours(response.data.data);
+      const result = response?.data;
+      const formattedRows = result?.data?.map((user: any) => ({
+        ...user,
+        _id: user?.userId,
+        username: user?.username || user?.name,
+        current_day_submissions: user?.current_day_submissions,
+        current_day_hours: user?.current_day_hours,
+        total_hours: user?.total_hours || user?.working_hrs
+      }));
+      setRows(formattedRows || []);
+      setTotalRows(result?.totalItems || 0);
     } catch (error) {
       console.error("Error fetching total work hours:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  const getTodaysWorklog = async (page: any, pageSize: any) => {
+  const getTodaysWorklog = async () => {
     try {
-      setLoading(true);
-      const response = await axiosHandler.get(`/worklog/getTodaysWorklog?page=${page + 1}&limit=${pageSize}}`);
-      setTasksToday(response?.data?.data);
+      const response = await axiosHandler.get(`/worklog/getTodaysWorklog`);
+      setTasksToday(response?.data?.data || []);
     } catch (error) {
       console.error("Error fetching today's worklog:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const getAllDept = async () => {
-    setLoading(true);
     try {
       const response = await axiosHandler.post(`department/getDepartmentbyIds`);
-      const data = response?.data?.data;
-      const { totalItems } = response?.data;
-      setTotalDept(totalItems);
+      setTotalDept(response?.data?.totalItems || 0);
     } catch (error) {
       console.error("Error fetching departments:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const getTask = async () => {
-    setLoading(true);
     try {
       const url = `${BASE_URL}${Endpoint.GET_WORKLOG}`;
       const headersList = {
@@ -92,21 +95,12 @@ const NewDashboard: React.FC = () => {
         Authorization: "bearer " + appState?.userDetails?.token,
       };
       const response = await fetch(url, { method: "GET", headers: headersList });
-      if (response?.status === 201) {
+      if (response.status === 201) {
         const data = await response.json();
-        setLocation(data?.locationCount);
-        const taskList = data?.data;
-        const formattedRows = taskList?.map((e: any) => ({
-          ...e,
-          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-          working_hrs_mins: `${e.working_hrs}hrs ${e.working_mins}mins`,
-        }));
-        setRows(formattedRows);
+        setLocation(data?.locationCount || 0);
       }
     } catch (error) {
       console.error("Error fetching tasks:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -114,8 +108,8 @@ const NewDashboard: React.FC = () => {
     setLoading(true);
     try {
       const response = await axiosHandler.get(`/project/`);
-      setProjectList(response?.data?.data);
-      setTotalProject(response?.data?.totalItems);
+      setProjectList(response?.data?.data || []);
+      setTotalProject(response?.data?.totalItems || 0);
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -128,7 +122,7 @@ const NewDashboard: React.FC = () => {
       const response = await axiosHandler.get(`auth/getUserList`);
       const { data } = response?.data;
       const { totalItems } = response?.data;
-      setUserList(data);
+      setUserList(data || []);
       setTotalUser(totalItems);
     } catch (error) {
       console.error("Error fetching user details:", error);
@@ -138,7 +132,6 @@ const NewDashboard: React.FC = () => {
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
 
     setPaginationModel(paginationModel);
-    getAllUsersTotalWorkHoursForMonthAndDay(currentMonth, currentYear, paginationModel.page, paginationModel.pageSize);
   };
 
   const filteredData = userList?.filter((user: any) => user.role === 10000);
@@ -152,59 +145,26 @@ const NewDashboard: React.FC = () => {
 
   const uniqueCount = countUniqueUsernames(tasksToday);
   const progress = userCount !== 0 ? (uniqueCount / userCount) : 0;
-
-  const generateCombinedArray = () => {
-    if (tasksToday && filteredData) {
-      const usersNotInTasks = filteredData.filter((user: any) =>
-        !tasksToday.some((task: any) => task.userId === user.id)
-      );
-      return [
-        ...tasksToday,
-        ...usersNotInTasks.map((user: any) => ({
-          username: user.name,
-          userId: user.id,
-          current_day_submissions: 0,
-          current_day_hours: 0,
-          total_hours: 0,
-        })),
-      ];
-    }
-    return [];
-  };
-
-  useEffect(() => {
-    const combinedArray = generateCombinedArray();
-    const formattedRows = totalWorkHours.map((user: any) => ({
-      ...user,
-      _id: user?.userId,
-      username: user?.username || user?.name,
-      current_day_submissions: user?.current_day_submissions,
-      current_day_hours: user?.current_day_hours,
-      total_hours: user?.total_hours || user?.working_hrs
-    }));
-    setRows(formattedRows);
-  }, [totalWorkHours]);
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDates((prevDates) => ({ ...prevDates, [name]: value }));
-  };
-
-  const handleSearch = () => setSearchButtonClicked(true);
-
-  const handleReset = () => {
-    setSearchButtonClicked(false);
-    setDates({ startDate: '', endDate: '' });
-  };
-
-  const isDateValid = (date: string) => Date.parse(date) > 0;
-
   const columns: any[] = [
     { field: "username", headerName: "Username", width: 170, headerClassName: "super-app-theme--header", cellClassName: "text-sm" },
     { field: "current_day_submissions", headerName: "No. of Submissions", width: 170, headerClassName: "super-app-theme--header", cellClassName: "text-sm" },
-    { field: "current_day_hours", headerName: "Total Working Hours", width: 170, headerClassName: "super-app-theme--header", renderCell: (params: any) => (<div className="cursor-pointer">{parseInt(params.value)}hrs</div>) },
     {
-      field: "total_hours", headerName: "Total Month Working Hours", width: 170, headerClassName: "super-app-theme--header", renderCell: (params: any) => (<div className="cursor-pointer">{parseInt(params.value)}hrs</div>)
+      field: "current_day_hours",
+      headerName: "Total Working Hours",
+      width: 170,
+      renderCell: (params: any) => {
+        const hours = Number(params.value);
+        return <div className="cursor-pointer">{isNaN(hours) ? '0hrs' : `${hours}hrs`}</div>;
+      }
+    },
+    {
+      field: "total_hours",
+      headerName: "Total Month Working Hours",
+      width: 200,
+      renderCell: (params: any) => {
+        const hours = Number(params.value);
+        return <div className="cursor-pointer">{isNaN(hours) ? '0hrs' : `${hours}hrs`}</div>;
+      }
     },
   ];
 
