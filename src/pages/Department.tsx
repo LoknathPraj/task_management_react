@@ -1,4 +1,3 @@
-import { TextField } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +7,8 @@ import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Radio from "../components/Radio";
 import { BASE_URL } from "../constant";
-import Loader from "../components/Loader";
+import InlineLoader from "../components/InlineLoader";
+import { FiHome, FiEdit2, FiTrash2, FiSave, FiX, FiPlus } from "react-icons/fi";
 
 function Department() {
   const navigate = useNavigate();
@@ -19,38 +19,63 @@ function Department() {
   const [formData, setFormData] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>();
   const [editIsClicked, setEditIsClicked] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
     setPaginationModel(paginationModel);
     getAllDept(paginationModel.page, paginationModel.pageSize);
   };
-  const [loading, setLoading] = useState(false);
+
   const columns: any[] = [
     {
       field: "s_no",
       headerName: "S. No",
-      width: 150,
+      width: 100,
       headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "name",
-      headerName: "Name",
-      width: 300,
+      headerName: "Department Name",
+      width: 400,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="font-semibold text-gray-900 text-lg">
+          {params.value}
+        </div>
+      ),
     },
-    // {
-    //   field: "is_active",
-    //   headerName: "Is Active",
-    //   width: 150,
-    //   headerClassName: "super-app-theme--header",
-    // },
-
     {
       field: "createdAt",
       headerName: "Created Date",
-      width: 300,
-      headerClassName: "super-app-theme--header", 
+      width: 200,
+      headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params: any) => (
+        <span className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-lg">
+          {new Date(params.value).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })}
+        </span>
+      ),
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      width: 250,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="max-w-[230px]">
+          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+            {params.value || "No description available"}
+          </div>
+        </div>
+      ),
     },
   ];
 
@@ -263,73 +288,155 @@ function Department() {
   };
   return (
     <>
-      <div className="m-5 h-10">
-      {loading&& <Loader />}
-        <GridTable
-          onClickAction={onClickAction}
-          actions={["DELETE"]}
-          rowData={rows}
-          onClickAdd={() => {
-            setIsModalOpen(true);
-          }}
-          columnData={columns}
-          toolTipName={"Create Department"}
-          onPaginationChange={handlePaginationChange}
-          rowCount={totalRows}
-        />
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Department Management</h1>
+            <p className="text-gray-600">Manage organizational departments and their settings</p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Departments</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalRows || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <FiHome className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Active Departments</p>
+                  <p className="text-2xl font-bold text-green-600">{rows?.filter((dept: any) => dept.is_active !== false)?.length || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <FiEdit2 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Recent Additions</p>
+                  <p className="text-2xl font-bold text-purple-600">{rows?.filter((dept: any) => {
+                    const createdDate = new Date(dept.createdAt);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return createdDate > weekAgo;
+                  })?.length || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <FiPlus className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <GridTable
+              onClickAction={onClickAction}
+              actions={["DELETE"]}
+              rowData={rows}
+              onClickAdd={() => {
+                setIsModalOpen(true);
+              }}
+              columnData={columns}
+              toolTipName={"Create Department"}
+              onPaginationChange={handlePaginationChange}
+              rowCount={totalRows}
+            />
+          </div>
+        </div>
       </div>
       {isModalOpen && (
         <Modal
           isLoading={false}
-          customFooter={true}
-          //modalSize=""
-          //modalHeight=""
+          modalSize="max-w-2xl"
           modalHeader={"Create Department"}
           modalBody={
-            <div>
-              <div className="relative mt-5 mb-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5">
-                  <div className=" mb-6">
-                    <TextField
-                      className="w-80"
-                      label="Department Name"
-                      name="name"
-                      required={requiredInputFields.name}
-                      error={formErrors?.name || ""}
-                      value={formData?.name || ""}
-                      onKeyDown={handleKeyDown}
-                      type="text"
-                      onChange={handleInputChange}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                  </div>
-                  {/* <div className=" ml-15 mb-4 mt-[-10px]">
-                    <Radio
-                      label={"Is Active:"}
-                      options={[
-                        { value: "yes", label: "Yes" },
-                        { value: "no", label: "No" },
-                      ]}
-                      selectedValue={formData?.isActive}
-                      name={""}
-                      onChange={handleRadioChange}
-                    />
-                  </div> */}
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Department Name */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiHome className="w-4 h-4" />
+                    Department Name
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData?.name || ""}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    className={`form-input ${formErrors?.name ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Enter department name"
+                  />
+                  {formErrors?.name && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiEdit2 className="w-4 h-4" />
+                    Status
+                  </label>
+                  <Radio
+                    label={"Is Active:"}
+                    options={[
+                      { value: "yes", label: "Yes" },
+                      { value: "no", label: "No" },
+                    ]}
+                    selectedValue={formData?.isActive}
+                    name={""}
+                    onChange={handleRadioChange}
+                  />
                 </div>
               </div>
             </div>
           }
-          positiveButtonTitle={"Create"}
-          onClickButton={onClickButton}
+          modalFooter={
+            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="btn btn-outline flex items-center gap-2"
+              >
+                <FiX className="w-4 h-4" />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => onClickButton("create")}
+                disabled={loading}
+                className={`btn flex items-center gap-2 ${
+                  loading 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'btn-primary'
+                }`}
+              >
+                {loading ? (
+                  <InlineLoader text="Creating..." />
+                ) : (
+                  <>
+                    <FiSave className="w-4 h-4" />
+                    Create Department
+                  </>
+                )}
+              </button>
+            </div>
+          }
         />
       )}
     </>

@@ -4,6 +4,7 @@ import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import Loader from "../components/Loader";
+import { FiCalendar } from "react-icons/fi";
 
 export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   interface Department {
@@ -31,6 +32,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
   const [loading, setLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Function to handle pagination changes
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
@@ -228,6 +230,20 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
       headerName: "Working Date",
       width: 200,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => {
+        const workingDate = new Date(params.row.working_date);
+        const createdAt = new Date(params.row.createdAt);
+        const isSameDate = workingDate.toDateString() === createdAt.toDateString();
+        
+        return (
+          <div className="flex items-center justify-center space-x-1">
+            <FiCalendar className={`w-4 h-4 ${isSameDate ? 'text-gray-500' : 'text-orange-500'}`} />
+            <span className={`text-sm ${isSameDate ? 'text-gray-700' : 'text-orange-600 font-medium'}`}>
+              {params.value}
+            </span>
+          </div>
+        );
+      },
     },
     {
       field: "task_description",
@@ -311,11 +327,7 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
 
 
   const downloadExcelData = async () => {
-    if (!selectedValueInDropdown?.value || !selectedValueInDropdown2?.value) {
-      return; 
-    }
-  
-    const url = `${BASE_URL}worklog/downloadExcel?departmentIds=${selectedValueInDropdown?.value}&userId=${selectedValueInDropdown2?.value}`;
+    const url = `${BASE_URL}worklog/downloadExcel${selectedValueInDropdown?.value && selectedValueInDropdown2?.value ? `?departmentIds=${selectedValueInDropdown?.value}&userId=${selectedValueInDropdown2?.value}` : ''}`;
     let headersList = {
       "Content-Type": "application/json",
       Authorization: "bearer " + appState?.userDetails?.token,
@@ -365,7 +377,6 @@ export default function ViewAllUserTask({ insertedRecord, onUpdate }: any) {
           onPaginationChange={handlePaginationChange}
           rowCount={totalRows}
           onClickExport={downloadExcelData}
-          exportButtonDisabled={!selectedValueInDropdown?.value || !selectedValueInDropdown2?.value}
         />
       </div>
     </div>

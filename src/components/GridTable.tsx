@@ -5,10 +5,11 @@ import { escapeRegExp } from "@mui/x-data-grid/internals";
 import { RxCross2 } from "react-icons/rx";
 import { Autocomplete, TextField, Tooltip } from "@mui/material";
 import { TbTrash } from "react-icons/tb";
-import { FiEdit, FiEye } from "react-icons/fi";
+import { FiEdit, FiEye, FiDownload, FiFilter, FiUsers, FiHome } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { HiAdjustmentsHorizontal } from "react-icons/hi2";
 import Dropdown from "./Dropdown";
+import InlineLoader from "./InlineLoader";
 
 interface Props {
   rowData: any;
@@ -39,15 +40,7 @@ interface Props {
   selectedValue2?: any;
   isLoading?: boolean;
   exportButtonDisabled?: boolean;
-
-
-  // checkbox:boolean
-  // onPageChange?: (currentPage: any) => void;
-  // onRowsPerPageChange?: (rowCountPage: any) => void;
-  // totalCount?: number;
-  // onClickSearch?: (serchData: any) => void;
-  // hidePagination?: boolean;
-  // hideSearch?: boolean;
+  isExporting?: boolean;
 }
 
 function GridTable({
@@ -77,18 +70,17 @@ function GridTable({
   selectedValue2,
   onPaginationChange,
   rowCount,
-
+  isExporting = false,
 }: Props) {
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState<Array<any>>([]);
   const [searchString, setSearchString] = useState<string>("");
   const [filterData, setFilterData] = useState<string>("");
-  console.log('filterData: ', filterData);
-
 
   useEffect(() => {
     setFilterData("");
   }, []);
+  
   useEffect(() => {
     if (rowData || columnData) {
       setRows(rowData);
@@ -96,11 +88,12 @@ function GridTable({
     if (actions?.length > 0 && columnData) {
       const actionColumn: any = {
         field: "action",
-        headerName: "Action",
-        width: 150,
+        headerName: "Actions",
+        width: 120,
         headerClassName: "super-app-theme--header",
         headerAlign: "center",
         align: "center",
+        sortable: false,
         renderCell: (param: any) => (
           <ActionOption
             actions={actions}
@@ -115,7 +108,7 @@ function GridTable({
     } else {
       setCols(columnData);
     }
-  }, [rowData, columnData,]);
+  }, [rowData, columnData, actions]);
 
   const requestSearch = (searchValue: any) => {
     setSearchString(searchValue);
@@ -134,43 +127,43 @@ function GridTable({
     } else {
       setRows([]);
     }
-
   };
-const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
+
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark mt-[-20px] dark:bg-boxdark">
-      <div className="realative flex items-center gap-x-4 justify-between my-3 mx-2">
-        <div className="flex items-center  rounded-sm border border-bgray ">
-          <input
-            className="p-2 text-base  float-left w-[200px] lg:w-[300px] bg-white focus:border-transparent outline-none"
-            placeholder="Search..."
-            value={searchString}
-            onChange={(e: any) => setSearchString(e.target.value)}
-          />
-          {searchString ? (
-            <RxCross2
-              className="w-5 h-5 mr-2"
-              onClick={() => requestSearch("")}
-            />
-          ) : (
-            <div className="w-5 h-5 mr-2" />
-          )}
-          <div
-            className="border-l border-bgray py-2.5 px-3 "
-            onClick={() => requestSearch(searchString)}
-          >
-            <IoSearchSharp className="h-5 w-5 " />
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Header Section */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between gap-3">
+          {/* Left Side - Search Bar */}
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <input
+                className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Search records..."
+                value={searchString}
+                onChange={(e: any) => setSearchString(e.target.value)}
+              />
+              <IoSearchSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              {searchString && (
+                <button
+                  onClick={() => requestSearch("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <RxCross2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-5">
-          <div>
+          {/* Right Side - Action Buttons */}
+          <div className="flex items-center gap-2">
+            {/* Dropdown 1 - Department */}
             {onClickDropdown && (
-              <>
-
-                <div>
-
-
+              <div className="min-w-[180px]">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiHome className="h-4 w-4 text-gray-400" />
+                  </div>
                   <Dropdown
                     submitRef={true}
                     multiple={false}
@@ -179,143 +172,183 @@ const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
                     handleChange={onClickDropdown}
                     defaultLabel={dropdownLabel}
                     label=""
-                    className="mb-[-22px] w-[12.5rem]"
+                    className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                   />
+                  <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
+              </div>
+            )}
 
-              </>
-            )}
-          </div>
-          <div>
+            {/* Dropdown 2 - Users */}
             {onClickDropdown2 && (
-              <>
-                <Tooltip title={"Apply Filters"}>
-                  <div className="ml-20">
-                    <Dropdown
-                      submitRef={true}
-                      multiple={false}
-                      defaultValue={selectedValue2 || null}
-                      options={dropdownOptions2}
-                      handleChange={onClickDropdown2}
-                      defaultLabel={dropdownLabel2}
-                      isClearable={true}
-                      label=""
-                      className="mb-[-22px] w-[12.5rem]"
-                    />
+              <div className="min-w-[180px]">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiUsers className="h-4 w-4 text-gray-400" />
                   </div>
-                </Tooltip>
-              </>
-            )}
-          </div>
-          <div>
-            {onClickFilter && (
-              <>
-                <Tooltip title={"Apply Filters"}>
-                  <div
-                    className="cursor-pointer w-25 h-9 ml-12 col-span-1 text-white flex items-center justify-center bg-blue-700 border border-white rounded-lg"
-                    onClick={() => {
-                      onClickFilter && onClickFilter();
-                    }}
-                  >
-                    <span className="mr-1">{filterButtonTitle}</span>
-                    <HiAdjustmentsHorizontal className="h-4 w-6" />
+                  <Dropdown
+                    submitRef={true}
+                    multiple={false}
+                    defaultValue={selectedValue2 || null}
+                    options={dropdownOptions2}
+                    handleChange={onClickDropdown2}
+                    defaultLabel={dropdownLabel2}
+                    isClearable={true}
+                    label=""
+                    className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                </Tooltip>
-              </>
-            )}
-          </div>
-          <div>
-            {onClickAdd && (
-              <>
-                <Tooltip title={toolTipName}>
-                  <div
-                    className="cursor-pointer w-20 h-9 ml-12 text-white col-span-1 flex items-center justify-center bg-blue-700 border border-white rounded-lg"
-                    onClick={() => {
-                      onClickAdd && onClickAdd();
-                    }}
-                  >
-                    <span className="mr-1">{topActionButtonTitle}</span>
-                    <FaPlus className="h-4 w-4" />
-                  </div>
-                </Tooltip>
-              </>
-            )}
-          </div>
-          <div>
-            {onClickExport && (
-              <Tooltip title={toolTipName}>
-                <div
-                  className={`cursor-pointer w-25 p-2 h-10 ml-12 text-white flex col-span-1 items-center justify-center bg-blue-700 border border-white rounded-lg ${isExportDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                  onClick={() => {
-                    if (!isExportDisabled) {
-                      onClickExport && onClickExport();
-                    }
-                  }}
-                >
-                  <span className="mr-1">Export</span>
-                  <FaPlus className="h-3 w-3" />
                 </div>
-              </Tooltip>
+              </div>
+            )}
+
+            {/* Filter Button */}
+            {onClickFilter && (
+              <button
+                onClick={() => onClickFilter()}
+                className="btn btn-outline flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+              >
+                <FiFilter className="w-3 h-3" />
+                {filterButtonTitle}
+              </button>
+            )}
+
+            {/* Add Button */}
+            {onClickAdd && (
+              <button
+                onClick={onClickAdd}
+                className="btn btn-primary flex items-center gap-2 px-3 py-2 text-sm hover:shadow-md transition-all duration-200"
+              >
+                <FaPlus className="w-3 h-3" />
+                {topActionButtonTitle}
+              </button>
+            )}
+
+            {/* Export Button */}
+            {onClickExport && (
+              <button
+                onClick={onClickExport}
+                disabled={isExporting}
+                className={`btn flex items-center gap-2 px-3 py-2 text-sm transition-all duration-200 ${
+                  isExporting 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'btn-primary hover:shadow-md'
+                }`}
+              >
+                {isExporting ? (
+                  <InlineLoader text="Exporting..." />
+                ) : (
+                  <>
+                    <FiDownload className="w-3 h-3" />
+                    Export
+                  </>
+                )}
+              </button>
             )}
           </div>
         </div>
+
+        {/* Legacy Filter Section */}
         {filterDropdownData?.length > 0 && (
-          <div className="flex w-1/4">
-            <select
-              required
-              value={filterData}
-              onChange={(e) => setFilterData(e.target.value)}
-              style={{
-                borderWidth: 1,
-                borderTopLeftRadius: 5,
-                borderBottomLeftRadius: 5,
-              }}
-              className="border-1 border-gray-400 w-full"
-            >
-              <option value={""}>Select User</option>
-              {filterDropdownData?.map((e) => (
-                <option value={e?._id}>{e?.name}</option>
-              ))}
-            </select>
+          <div className="mt-3 flex items-center gap-3">
+            <div className="relative flex-1 max-w-xs">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiUsers className="h-4 w-4 text-gray-400" />
+              </div>
+              <select
+                required
+                value={filterData}
+                onChange={(e) => setFilterData(e.target.value)}
+                className="w-full pl-10 pr-8 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400 appearance-none"
+              >
+                <option value="">Select User</option>
+                {filterDropdownData?.map((e: any) => (
+                  <option key={e?._id} value={e?._id}>
+                    {e?.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
             <button
-              style={{ borderTopRightRadius: 5, borderBottomRightRadius: 5 }}
               type="button"
               onClick={() => onClickFilter && onClickFilter(filterData)}
-              className="bg-blue-700 text-white p-2  m-auto w-1/2"
+              className="btn btn-primary px-4 py-2 text-sm hover:shadow-md transition-all duration-200"
             >
               Filter
             </button>
           </div>
         )}
       </div>
-      <div style={{ height: 450, width: "100%" }} className="max-h-fit">
+
+      {/* DataGrid */}
+      <div className="h-[600px] w-full">
         <DataGrid
           sx={{
             "& .super-app-theme--header": {
-              fontSize: "16px",
-              fontWeight: "bold",
-              color: "#1f7fbb",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "#374151",
+              backgroundColor: "#f9fafb",
+              borderBottom: "2px solid #e5e7eb",
             },
             "& .MuiDataGrid-cell": {
-              fontFamily: "sans-serif",
-              maxHeight: "200px",
-              paddingTop: "15px",
-              paddingBottom: "15px",
+              fontSize: "14px",
+              fontFamily: "Inter, sans-serif",
+              padding: "16px 12px",
+              borderBottom: "1px solid #f3f4f6",
+              display: "flex",
+              alignItems: "center",
+              "&:hover": {
+                backgroundColor: "#f8fafc",
+              },
+            },
+            "& .MuiDataGrid-row": {
+              "&:hover": {
+                backgroundColor: "#f8fafc",
+              },
+              "&:nth-of-type(even)": {
+                backgroundColor: "#fafafa",
+              },
+            },
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "1px solid #e5e7eb",
+              backgroundColor: "#f9fafb",
+            },
+            "& .MuiDataGrid-pagination": {
+              color: "#374151",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              borderBottom: "2px solid #e5e7eb",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: "#ffffff",
+            },
+            "& .MuiDataGrid-virtualScrollerContent": {
+              backgroundColor: "#ffffff",
+            },
+            "& .MuiDataGrid-virtualScrollerRenderZone": {
+              backgroundColor: "#ffffff",
             },
           }}
-          getRowHeight={(params) => "auto"}
-          // getRowHeight={(param)}
-          getRowId={(row: any) => row?._id}
-          className="bg-white rounded-none dark:border-strokedark dark:bg-boxdark "
+          getRowHeight={() => 60}
+          getRowId={(row: any) => row?._id || row?.id}
+          className="border-0"
           rows={rows}
           rowCount={rowCount}
-          // loading={isLoading}
-          // slotProps={{
-          //   loadingOverlay: {
-          //     variant: "skeleton",
-          //     noRowsVariant: "skeleton",
-          //   },
-          // }}
+          loading={isLoading}
           columns={cols}
           rowSelection={false}
           initialState={{
@@ -324,9 +357,7 @@ const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
             },
           }}
           pageSizeOptions={[10, 25, 50, 100]}
-          // checkboxSelection={checkbox}
           disableColumnMenu={true}
-          rowHeight={48}
           paginationMode="server"
           onPaginationModelChange={(paginationModel) => {
             const { page, pageSize } = paginationModel;
@@ -334,7 +365,8 @@ const isExportDisabled = !selectedValue?.value || !selectedValue2?.value;
               onPaginationChange({ page, pageSize });
             }
           }}
-        // slots={{pagination:()=><>Hello</>}}
+          autoHeight={false}
+          density="comfortable"
         />
       </div>
     </div>
@@ -350,32 +382,35 @@ interface OptionProps {
 
 const ActionOption = ({ onClick, actions = [] }: OptionProps) => {
   return (
-    <div className="flex justify-center items-start gap-x-2 h-full">
-      {actions.includes("DELETE") && (
-        <p className="cursor-pointer">
-          <TbTrash
-            className="w-5 h-5 text-red-500"
-            onClick={() => onClick && onClick("DELETE")}
-          />
-        </p>
+    <div className="flex items-center justify-center gap-2">
+      {actions.includes("VIEW") && (
+        <button
+          onClick={() => onClick("VIEW")}
+          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
+          title="View"
+        >
+          <FiEye className="w-4 h-4" />
+        </button>
       )}
 
       {actions.includes("EDIT") && (
-        <p className="cursor-pointer w-5 h-5">
-          <FiEdit
-            className="w-5 h-5"
-            onClick={() => onClick && onClick("EDIT")}
-          />
-        </p>
+        <button
+          onClick={() => onClick("EDIT")}
+          className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
+          title="Edit"
+        >
+          <FiEdit className="w-4 h-4" />
+        </button>
       )}
 
-      {actions.includes("VIEW") && (
-        <p className="cursor-pointer w-5 h-5">
-          <FiEye
-            className="w-5 h-5 text-blue-500"
-            onClick={() => onClick && onClick("VIEW")}
-          />
-        </p>
+      {actions.includes("DELETE") && (
+        <button
+          onClick={() => onClick("DELETE")}
+          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+          title="Delete"
+        >
+          <TbTrash className="w-4 h-4" />
+        </button>
       )}
     </div>
   );

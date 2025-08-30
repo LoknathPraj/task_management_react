@@ -2,6 +2,10 @@ export const BASE_URL = "https://task-management-backend-orcin-phi.vercel.app/ap
 // export const BASE_URL = "http://localhost:8080/api/";
 export const Endpoint = {
   LOGIN: "auth/login",
+  REGISTER: "auth/register",
+  FORGOT_PASSWORD: "auth/forgot-password",
+  VERIFY_OTP: "auth/verify-otp",
+  RESET_PASSWORD: "auth/reset-password",
   ADD_TASK: "worklog/add-worklog",
   UPDATE_TASK: "worklog/updateWorklogById",
   GET_WORKLOG: "worklog/getAllWorklog",

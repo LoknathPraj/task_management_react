@@ -8,6 +8,16 @@ import { AppContext } from "../../context/AppContext";
 import LanIcon from "@mui/icons-material/Lan";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import { MdRemoveRedEye } from "react-icons/md";
+import { 
+  FiHome, 
+  FiUsers, 
+  FiSettings, 
+  FiBarChart, 
+  FiFolder,
+  FiPlusCircle,
+  FiEye
+} from "react-icons/fi";
+
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -60,167 +70,141 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const userRole = appState?.userDetails?.user?.role;
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `group relative flex items-center gap-3 rounded-lg py-3 px-4 font-medium transition-all duration-200 ease-in-out ${
+      isActive
+        ? "bg-primary-100 text-primary-700 border-r-2 border-primary-600 shadow-sm"
+        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+    }`;
+
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 flex h-screen w-58 flex-col overflow-y-hidden overflow-auto bg-[#0e1a2c] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
+      className={`absolute left-0 top-0 z-50 flex h-screen w-64 flex-col overflow-y-hidden bg-white shadow-xl duration-300 ease-linear lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      <div className="flex items-center justify-between gap-2 px-6 py-3.5 lg:py-3.5">
-        <NavLink to="">
-          <img
-            src={"/timesheet.png"}
-            alt="Logo"
-            className="w-[180px]  p-0 lg:align-middle mx-auto"
-          />
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 px-6 py-6 border-b border-gray-200">
+        <NavLink to="" className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">T</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
+            <p className="text-xs text-gray-500">Management System</p>
+          </div>
         </NavLink>
-        <div
+        <button
           ref={trigger}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls="sidebar"
           aria-expanded={sidebarOpen}
-          className="block lg:hidden "
+          className="block lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <MdOutlineCancel className="w-6 h-6 text-white" />
-        </div>
+          <MdOutlineCancel className="w-5 h-5 text-gray-600" />
+        </button>
       </div>
 
-      <div className="no-scrollbar mt-[-20px] flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-0 py-0 px-4 lg:mt-5 lg:px-6">
-          <div>
-            <ul className="mb-6 flex flex-col gap-1.5">
-              {userRole == 10001 ? (
-                <ul>
-                  {/* <li>
-                    <NavLink
-                      to="/dashboard"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <RxDashboard className="w-5 h-5 " />
-                      Dashboard
-                    </NavLink>
-                  </li> */}
-                  <li>
-                    <NavLink
-                      to="/new-dashboard"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <RxDashboard className="w-5 h-5 " />
-                      New Dashboard
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/tasks"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <TaskIcon className="w-5 h-5 " />
-                      Tasks
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/add-user"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <GroupIcon className="w-5 h-5 " />
-                      Users
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/project"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <TerminalIcon className="w-5 h-5 " />
-                      Projects
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/task-type"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <TerminalIcon className="w-5 h-5 " />
-                      Task Type
-                    </NavLink>
-                  </li>
-                </ul>
-              ) : (
-                ""
-              )}
+      {/* Navigation */}
+      <div className="flex flex-col overflow-y-auto flex-1">
+        <nav className="px-4 py-6">
+          <div className="space-y-2">
+            {/* Admin Navigation */}
+            {userRole === 10001 && (
+              <div className="space-y-1">
+                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Administration
+                </h3>
+                <NavLink to="/new-dashboard" className={navLinkClass}>
+                  <RxDashboard className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </NavLink>
+                <NavLink to="/tasks" className={navLinkClass}>
+                  <TaskIcon className="w-5 h-5" />
+                  <span>Task Management</span>
+                </NavLink>
+                <NavLink to="/add-user" className={navLinkClass}>
+                  <FiUsers className="w-5 h-5" />
+                  <span>User Management</span>
+                </NavLink>
+                <NavLink to="/project" className={navLinkClass}>
+                  <FiFolder className="w-5 h-5" />
+                  <span>Projects</span>
+                </NavLink>
+                <NavLink to="/task-type" className={navLinkClass}>
+                  <FiSettings className="w-5 h-5" />
+                  <span>Task Types</span>
+                </NavLink>
+                <NavLink to="/worklog-dashboard" className={navLinkClass}>
+                  <FiBarChart className="w-5 h-5" />
+                  <span>Worklog Dashboard</span>
+                </NavLink>
+              </div>
+            )}
 
-              {userRole === 10000 ? (
-                <ul>
-                  {/* <li>
-                    <NavLink
-                      to="/dashboard"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <RxDashboard className="w-5 h-5 " />
-                      Dashboard
-                    </NavLink>
-                  </li> */}
-                  <li>
-                    <NavLink
-                      to="/add-task"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <TaskIcon className="w-5 h-5 " />
-                      Add Task
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/view-tasks"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <MdRemoveRedEye className="w-5 h-5 " />
-                      View Tasks
-                    </NavLink>
-                  </li>
-                </ul>
-              ) : (
-                ""
-              )}
-              {userRole === 10002 ? (
-                <ul>
-                  {/* <li>
-                    <NavLink
-                      to="/dashboard"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <RxDashboard className="w-5 h-5 " />
-                      Dashboard
-                    </NavLink>
-                  </li> */}
-                  <li>
-                    <NavLink
-                      to="/add-admin"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <TaskIcon className="w-5 h-5 " />
-                      Admins
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/department"
-                      className="group relative flex items-center gap-2.5 rounded-sm py-3 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
-                    >
-                      <LanIcon className="w-5 h-5 " />
-                      Departments
-                    </NavLink>
-                  </li>
-                </ul>
-              ) : (
-                " "
-              )}
-            </ul>
+            {/* User Navigation */}
+            {userRole === 10000 && (
+              <div className="space-y-1">
+                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Task Management
+                </h3>
+                <NavLink to="/add-task" className={navLinkClass}>
+                  <FiPlusCircle className="w-5 h-5" />
+                  <span>Add Task</span>
+                </NavLink>
+                <NavLink to="/view-tasks" className={navLinkClass}>
+                  <FiEye className="w-5 h-5" />
+                  <span>View Tasks</span>
+                </NavLink>
+                <NavLink to="/worklog-dashboard" className={navLinkClass}>
+                  <FiBarChart className="w-5 h-5" />
+                  <span>Worklog Dashboard</span>
+                </NavLink>
+              </div>
+            )}
+
+            {/* Super Admin Navigation */}
+            {userRole === 10002 && (
+              <div className="space-y-1">
+                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  System Admin
+                </h3>
+                <NavLink to="/add-admin" className={navLinkClass}>
+                  <FiUsers className="w-5 h-5" />
+                  <span>Admin Management</span>
+                </NavLink>
+                <NavLink to="/department" className={navLinkClass}>
+                  <LanIcon className="w-5 h-5" />
+                  <span>Departments</span>
+                </NavLink>
+                <NavLink to="/worklog-dashboard" className={navLinkClass}>
+                  <FiBarChart className="w-5 h-5" />
+                  <span>Worklog Dashboard</span>
+                </NavLink>
+              </div>
+            )}
           </div>
         </nav>
-        {/* <!-- Sidebar Menu --> */}
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-gray-200 p-4">
+        <div className="flex items-center space-x-3 px-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">
+              {appState?.userDetails?.user?.name?.charAt(0)?.toUpperCase()}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {appState?.userDetails?.user?.name}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              {appState?.userDetails?.user?.email}
+            </p>
+          </div>
+        </div>
       </div>
     </aside>
   );

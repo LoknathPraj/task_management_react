@@ -1,4 +1,3 @@
-import { Autocomplete, Button, TextField, Tooltip } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +8,8 @@ import { designationOptions } from "../utils/index";
 import { showNotification } from "../components/Toast";
 import Dropdown from "../components/Dropdown";
 import { BASE_URL } from "../constant";
-import Loader from "../components/Loader";
+import InlineLoader from "../components/InlineLoader";
+import { FiUserPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiSave, FiX } from "react-icons/fi";
 
 function AddAdmin() {
   const navigate = useNavigate();
@@ -24,8 +24,10 @@ function AddAdmin() {
   const [validMatch, setValidMatch] = useState(false);
   const [formErrors, setFormErrors] = useState<any>();
   const [loading, setLoading] = useState(false);
+
   const [departmentData, setDepartmentData] = useState<any>();
   const [editState, setEditState] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [totalRows, setTotalRows] = useState(0);
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
@@ -36,39 +38,80 @@ function AddAdmin() {
     {
       field: "s_no",
       headerName: "S. No",
-      width: 80,
+      width: 100,
       headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "name",
-      headerName: "Name",
-      width: 200,
+      headerName: "Admin Name",
+      width: 220,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="font-semibold text-gray-900 text-lg">
+          {params.value}
+        </div>
+      ),
     },
-
     {
       field: "designation",
       headerName: "Designation",
-      width: 150,
+      width: 180,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+          {params.value}
+        </span>
+      ),
     },
     {
       field: "department",
       headerName: "Departments",
       width: 250,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="font-medium text-gray-700">
+          {params.value}
+        </div>
+      ),
     },
     {
       field: "email",
-      headerName: "E-Mail",
-      width: 250,
+      headerName: "Email Address",
+      width: 280,
       headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="text-blue-600 hover:text-blue-800 transition-colors">
+          {params.value}
+        </div>
+      ),
     },
     {
       field: "joiningDate",
       headerName: "Joining Date",
-      width: 150,
+      width: 160,
       headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params: any) => (
+        <span className="text-sm text-gray-600">
+          {new Date(params.value).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      width: 250,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="max-w-[230px]">
+          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+            {params.value || "No description available"}
+          </div>
+        </div>
+      ),
     },
   ];
 
@@ -415,331 +458,318 @@ function AddAdmin() {
 
   return (
     <>
-      <div className="m-5 h-10">
-      {loading&& <Loader />}
-        <GridTable
-          onClickAction={onClickAction}
-          actions={["DELETE", "EDIT"]}
-          rowData={rows}
-          onClickAdd={() => {
-            setIsModalOpen(true);
-            resetStates();
-          }}
-          columnData={columns}
-          toolTipName={"Create Admin"}
-          onPaginationChange={handlePaginationChange}
-          rowCount={totalRows}
-        />
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Management</h1>
+            <p className="text-gray-600">Manage system administrators and their permissions</p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Admins</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalRows || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <FiUserPlus className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Active Admins</p>
+                  <p className="text-2xl font-bold text-green-600">{rows?.filter((admin: any) => admin.is_active !== false)?.length || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <FiEdit2 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Departments</p>
+                  <p className="text-2xl font-bold text-purple-600">{departmentData?.length || 0}</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <FiTrash2 className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <GridTable
+              onClickAction={onClickAction}
+              actions={["DELETE", "EDIT"]}
+              rowData={rows}
+              onClickAdd={() => {
+                setIsModalOpen(true);
+                resetStates();
+              }}
+              columnData={columns}
+              toolTipName={"Create Admin"}
+              onPaginationChange={handlePaginationChange}
+              rowCount={totalRows}
+            />
+          </div>
+        </div>
       </div>
       {isModalOpen && (
         <Modal
           isLoading={loading}
-          customFooter={true}
-          //modalSize=""
-          //modalHeight=""
+          modalSize="max-w-4xl"
           modalHeader={editState ? "Update Admin" : "Create Admin"}
           modalBody={
-            <div>
-              <div className="relative mt-5 mb-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5">
-                  <div className=" mb-6">
-                    <TextField
-                      className="w-80"
-                      label="Full Name"
-                      name="name"
-                      required={requiredInputFields.name}
-                      error={formErrors?.name || ""}
-                      value={formData?.name || ""}
-                      type="text"
-                      onChange={handleInputChange}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.name || ""}
-                    </div>
-                  </div>
-                  <div className=" mb-6">
-                    <TextField
-                      className="w-80"
-                      label="Phone Number"
-                      name="mobile"
-                      required={requiredInputFields.mobile}
-                      value={formData?.mobile || ""}
-                      onChange={handleInputChange}
-                      type="number"
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.mobile || ""}
-                    </div>
-                  </div>
-                  <div className="mb-6">
-                    <Autocomplete
-                      className="w-80"
-                      options={designationOptions}
-                      value={formData?.designationId}
-                      onChange={handleDesignationChange}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Designation"
-                          name="designationId"
-                          required={requiredInputFields.designationId}
-                          InputLabelProps={{
-                            sx: {
-                              marginTop: "-8px",
-                            },
-                          }}
-                        />
-                      )}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.designationId || ""}
-                    </div>
-                  </div>
-                  <div className=" mb-6">
-                    <TextField
-                    disabled={editState ? true : false}
-                      className="w-80"
-                      label="Joining Date"
-                      type="date"
-                      required={requiredInputFields.joiningDate}
-                      name="joiningDate"
-                      onChange={handleInputChange}
-                      value={formData?.joiningDate || ""}
-                      InputLabelProps={{
-                        shrink: true,
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.joiningDate || ""}
-                    </div>
-                  </div>
-                  <div className=" mb-6">
-                    <TextField
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Full Name */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Full Name
+                    {requiredInputFields.name && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData?.name || ""}
+                    onChange={handleInputChange}
+                    className={`form-input ${formErrors?.name ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Enter full name"
+                  />
+                  {formErrors?.name && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>
+                  )}
+                </div>
+                {/* Phone Number */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Phone Number
+                    {requiredInputFields.mobile && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData?.mobile || ""}
+                    onChange={handleInputChange}
+                    className={`form-input ${formErrors?.mobile ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Enter phone number"
+                  />
+                  {formErrors?.mobile && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.mobile}</p>
+                  )}
+                </div>
+                {/* Designation */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Designation
+                    {requiredInputFields.designationId && <span className="text-red-500">*</span>}
+                  </label>
+                  <select
+                    name="designationId"
+                    value={formData?.designationId?.value || ""}
+                    onChange={(e) => {
+                      const option = designationOptions.find(opt => opt.value.toString() === e.target.value);
+                      handleDesignationChange(e, option);
+                    }}
+                    className={`form-input ${formErrors?.designationId ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                  >
+                    <option value="">Select designation</option>
+                    {designationOptions.map((option: any) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors?.designationId && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.designationId}</p>
+                  )}
+                </div>
+                {/* Joining Date */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Joining Date
+                    {requiredInputFields.joiningDate && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type="date"
+                    name="joiningDate"
+                    value={formData?.joiningDate || ""}
+                    onChange={handleInputChange}
                     disabled={editState}
-                      className="w-80"
-                      label="E-Mail"
-                      type="email"
-                      name="email"
-                      required={requiredInputFields.email}
-                      onChange={handleInputChange}
-                      value={formData?.email || ""}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.email || ""}
-                    </div>
-                  </div>
-                  <div className=" mb-6">
-                    <TextField
-                      className="w-80"
-                      disabled={editState}
-                      label="Employee ID"
-                      name="empId"
-                      required={requiredInputFields.empId}
-                      error={formErrors?.empId || ""}
-                      value={formData?.empId || ""}
-                      type="text"
-                      onChange={handleInputChange}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.name || ""}
-                    </div>
-                  </div>
+                    className={`form-input ${formErrors?.joiningDate ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''} ${editState ? 'bg-gray-100' : ''}`}
+                  />
+                  {formErrors?.joiningDate && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.joiningDate}</p>
+                  )}
+                </div>
+                {/* Email */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Email Address
+                    {requiredInputFields.email && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData?.email || ""}
+                    onChange={handleInputChange}
+                    disabled={editState}
+                    className={`form-input ${formErrors?.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''} ${editState ? 'bg-gray-100' : ''}`}
+                    placeholder="Enter email address"
+                  />
+                  {formErrors?.email && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.email}</p>
+                  )}
+                </div>
+                {/* Employee ID */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Employee ID
+                    {requiredInputFields.empId && <span className="text-red-500">*</span>}
+                  </label>
+                  <input
+                    type="text"
+                    name="empId"
+                    value={formData?.empId || ""}
+                    onChange={handleInputChange}
+                    disabled={editState}
+                    className={`form-input ${formErrors?.empId ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''} ${editState ? 'bg-gray-100' : ''}`}
+                    placeholder="Enter employee ID"
+                  />
+                  {formErrors?.empId && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.empId}</p>
+                  )}
+                </div>
 
-                  <div className=" mb-6 relative">
-                    {/* <p className="absolute left-17 top-[-21px]">
-                      <span className="text-red-600">*</span>
-                      <Tooltip
-                        placement="top"
-                        title={
-                          "Must include uppercase and lowercase letters, a number and a special character. Allowed special characters: !@#$%*"
-                        }
-                      >
-                        <span className="ml-1">
-                          <FontAwesomeIcon
-                            icon={faInfoCircle}
-                            className="text-blue-gray-700"
-                          />
-                        </span>
-                      </Tooltip>
-                      <Tooltip placement="top" title={"Valid Password"}>
-                        <span
-                          className={
-                            validPwd ? "text-[#32CD32] ml-1" : "hidden"
-                          }
-                        >
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      </Tooltip>
-                      <Tooltip placement="top" title="Invalid Password">
-                        <span
-                          className={
-                            validPwd || !pwd ? "hidden" : "text-red-600 ml-1"
-                          }
-                        >
-                          <FontAwesomeIcon icon={faTimes} />
-                        </span>
-                      </Tooltip>
-                    </p> */}
-                    <TextField
-                      className="w-80"
-                      label="Password"
-                      required={requiredInputFields.password}
+                {/* Password */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiEye className="w-4 h-4" />
+                    Password
+                    {requiredInputFields.password && <span className="text-red-500">*</span>}
+                  </label>
+                  <div className="relative">
+                    <input
                       type="password"
                       value={pwd}
                       onChange={(e) => setPwd(e.target.value)}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
+                      className={`form-input pr-10 ${formErrors?.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                      placeholder="Enter password"
                     />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.password || ""}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                    </button>
                   </div>
+                  {formErrors?.password && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.password}</p>
+                  )}
+                </div>
 
-                  <div className=" mb-6">
-                    {/* <p className="">
-                      Confirm Password
-                      <span className="text-red-600">*</span>
-                      <Tooltip
-                        placement="top"
-                        title={"  Must match the New password."}
-                      >
-                        <span className="ml-1">
-                          <FontAwesomeIcon
-                            icon={faInfoCircle}
-                            className="text-blue-gray-700"
-                          />
-                        </span>
-                      </Tooltip>
-                      <Tooltip placement="top" title="Valid Match">
-                        <span
-                          className={
-                            validMatch && matchPwd && validPwd
-                              ? "text-[#32CD32] ml-1"
-                              : "hidden"
-                          }
-                        >
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      </Tooltip>
-                      <Tooltip placement="top" title="Invalid Match">
-                        <span
-                          className={
-                            (validMatch && validPwd) || !matchPwd
-                              ? "hidden"
-                              : "text-red-600 ml-1"
-                          }
-                        >
-                          <FontAwesomeIcon icon={faTimes} />
-                        </span>
-                      </Tooltip>
-                    </p> */}
-                    <TextField
-                      className="w-80"
-                      label="Confirm Password"
-                      required={requiredInputFields.confimPassword}
+                {/* Confirm Password */}
+                <div className="form-group">
+                  <label className="form-label flex items-center gap-2">
+                    <FiEye className="w-4 h-4" />
+                    Confirm Password
+                    {requiredInputFields.confimPassword && <span className="text-red-500">*</span>}
+                  </label>
+                  <div className="relative">
+                    <input
                       type="password"
                       value={matchPwd}
-                      // onFocus={() => setMatchFocus(true)}
-                      // onBlur={() => setMatchFocus(false)}
                       onChange={(e) => setMatchPwd(e.target.value)}
-                      InputLabelProps={{
-                        sx: {
-                          marginTop: "-8px",
-                        },
-                      }}
-                      sx={{
-                        ".MuiInputBase-root": {
-                          height: "40px",
-                        },
-                      }}
+                      className={`form-input pr-10 ${formErrors?.confirmPassword ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                      placeholder="Confirm password"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                    </button>
                   </div>
+                  {formErrors?.confirmPassword && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.confirmPassword}</p>
+                  )}
+                </div>
 
-                  <div className="">
-                    <Dropdown
-                      submitRef={true}
-                      multiple={true}
-                      disabled={editState}
-                      defaultValue={formData?.department || null}
-                      options={deptOptions}
-                      handleChange={handleDropdownChange}
-                      errorMessage={formErrors?.department}
-                      requiredField={requiredInputFields?.ldepartment || false}
-                      defaultLabel="Choose Departments"
-                      label=""
-                      className="h-[39px]"
-                    />
-                    <div className="text-[12px] mt-1 ml-1 text-red-600">
-                      {formErrors?.deptId || ""}
-                    </div>
-                  </div>
+                {/* Department */}
+                <div className="form-group md:col-span-2">
+                  <label className="form-label flex items-center gap-2">
+                    <FiUserPlus className="w-4 h-4" />
+                    Departments
+                    {requiredInputFields?.ldepartment && <span className="text-red-500">*</span>}
+                  </label>
+                  <Dropdown
+                    submitRef={true}
+                    multiple={true}
+                    disabled={editState}
+                    defaultValue={formData?.department || null}
+                    options={deptOptions}
+                    handleChange={handleDropdownChange}
+                    errorMessage={formErrors?.department}
+                    requiredField={requiredInputFields?.ldepartment || false}
+                    defaultLabel="Choose Departments"
+                    label=""
+                    className="h-[39px]"
+                  />
+                  {formErrors?.deptId && (
+                    <p className="text-sm text-red-600 mt-1">{formErrors.deptId}</p>
+                  )}
                 </div>
               </div>
             </div>
           }
-          positiveButtonTitle={editState ? "Update" : "Create"}
-          onClickButton={onClickButton}
+          modalFooter={
+            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="btn btn-outline flex items-center gap-2"
+              >
+                <FiX className="w-4 h-4" />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => onClickButton(editState ? "update" : "create")}
+                disabled={loading}
+                className={`btn flex items-center gap-2 ${
+                  loading 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'btn-primary'
+                }`}
+              >
+                {loading ? (
+                  <InlineLoader text={editState ? "Updating..." : "Creating..."} />
+                ) : (
+                  <>
+                    {editState ? <FiEdit2 className="w-4 h-4" /> : <FiSave className="w-4 h-4" />}
+                    {editState ? "Update Admin" : "Create Admin"}
+                  </>
+                )}
+              </button>
+            </div>
+          }
         />
       )}
     </>

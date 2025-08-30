@@ -1,21 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 import GridTable from "../components/GridTable";
-import { BASE_URL, Endpoint } from "../constant";
+
 import { AppContext } from "../context/AppContext";
 import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Modal from "../components/Modal";
 import moment from "moment";
-import Loader from "../components/Loader";
+import { FiEdit2, FiTrash2, FiFilter, FiSearch, FiDownload, FiClock, FiCalendar, FiMapPin } from "react-icons/fi";
 
 export default function ViewUserTask({ insertedRecord, onUpdate, styleFromComponent }: any) {
-  interface ProjectType {
-    id: string | number; // Adjust the type based on your data
-    name: string;
-  }
+
 
   const [rows, setRows] = useState<Array<any>>([]);
-  const [isModalOpen, setisModalOpen] = useState(false)
+  const [isModalOpen, setisModalOpen] = useState(false);
   const appState: any = useContext(AppContext);
 
   const [project, setProject] = useState("");
@@ -25,42 +22,21 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
   const [description, setDescription] = useState("");
   const [workingDate, setWorkingDate] = useState("");
   const [location, setLocation] = useState("");
-  const [newInsertedData, setNewInsertedData] = useState<any>(null);
+
   const [workId, setWorkId] = useState<any>("");
   const [projectData, setProjectData] = useState<any>();
-  const [taskTypeList, setTaskTypeList] = useState<Array<any>>([])
+
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const [totalRows, setTotalRows] = useState(0);  // Total rows for pagination
- const [loading, setLoading] = useState(false);
+  const [totalRows, setTotalRows] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   // Function to handle pagination changes
   const handlePaginationChange = (paginationModel: { page: number; pageSize: number }) => {
     setPaginationModel(paginationModel);
     getTaskById(paginationModel?.page, paginationModel?.pageSize);
   };
-  // const rowData: any = teamState?.teamList?.map(
-  //     (team: any, index: number) => ({
-  //       ...team,
-  //       s_no: index + 1,
-  //       createdDate: formatCreatedDate(team?.createdDate),
-  //       administrator: team?.administrator ? "Yes" : "No",
-  //     })
-  //   );
-  //   setRows(rowData);
-
-  //   useEffect(() => {
-  //     const obj: any = {
-  //       _id: "422232",
-  //       project: "FHUP",
-  //       task_type: "Bugs",
-  //       working_hrs: "2hr 30min",
-  //       working_date: "20/03/0333",
-  //       descriptions: "sd",
-  //       location: "Thane",
-  //     };
-  //     // setRows([obj])
-  //   }, []);
-
 
   useEffect(() => {
     if (insertedRecord) {
@@ -87,430 +63,452 @@ export default function ViewUserTask({ insertedRecord, onUpdate, styleFromCompon
     }
   }, [insertedRecord]);
 
-
-
-
   const getAllProjects = async () => {
     setLoading(true);
     try {
-      const response = await axiosHandler.get(`project/${appState?.userDetails?.user?.department?.[0]}`);      
+      const response = await axiosHandler.get(`project/${appState?.userDetails?.user?.department?.[0]}`);
       const data = response?.data?.data;
       setProjectData(data);
-    } catch (error: any) { }
+    } catch (error: any) {}
     finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     getAllProjects();
+    getTaskById(0, 10);
   }, []);
 
-
-
-
-
-  const getTaskById = async (page: any, pageSize: any) => {
-    const url = `${BASE_URL}${Endpoint.GET_WORKLOG_BY_USERID}?page=${page + 1}&limit=${pageSize}`;
-
-
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 201) {
-      const data = await response?.json();
-      setTotalRows(data?.totalItems)
-      const taskList = data?.data;
-        const r = taskList?.map((e: any) => ({
-          ...e,
-          display_working_date: new Date(e.working_date)?.toLocaleDateString(),
-          working_hrs_mins: e.working_hrs + "hrs " + e.working_mins + "mins",
-        }));
-
-      setRows(r);
-    }
-  };
-  useEffect(() => {
-    getTaskById(paginationModel?.page, paginationModel?.pageSize);
-  }, []);
-  const deleteTaskById = async (taskId: string) => {
-    const url = `${BASE_URL}${Endpoint.DELETE_BY_WORKLOG_ID}/${taskId}`;
-    let headersList = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + appState?.userDetails?.token,
-    };
-    const response = await fetch(url, {
-      method: "GET",
-      headers: headersList,
-    });
-    if (response?.status === 200) {
-      const lRow = rows.filter((e) => e._id !== taskId);
-      setRows(lRow);
-      showNotification("success", "Task Deleted Successfully!")
-    }
-  };
-
-  const onClickAction = (value: any, row?: any, _id?: any) => {
-
-
-    if (value === "DELETE") {
-      deleteTaskById(row?._id);
-    } else if (value === "EDIT") {
-      handleUpdate(row)
-      setisModalOpen(true)
-    }
-  };
-  const columns: any[] = [
-    {
-      field: "project_name",
-      headerName: "Project",
-      width: 150,
-      headerClassName: "super-app-theme--header",
-    },
-    {
-      field: "task_type",
-      headerName: "Tasks",
-      width: 200,
-      headerClassName: "super-app-theme--header",
-    },
-    {
-      field: "working_hrs_mins",
-      headerName: "Working Hrs",
-      width: 200,
-      headerClassName: "super-app-theme--header",
-    },
-    {
-      field: "display_working_date",
-      headerName: "Working Date",
-      width: 200,
-      headerClassName: "super-app-theme--header",
-    },
-    {
-      field: "task_description",
-      headerName: "Descriptions",
-      width: 200,
-      height:400,
-      headerClassName: "super-app-theme--header",
-      
-    },
-    {
-      field: "location",
-      headerName: "Location",
-      width: 200,
-      headerClassName: "super-app-theme--header",
-    },
-  ];
-
-
-
-  const resetForm = () => {
-    setProject("");
-    setWorkingHrs("");
-    setTaskType("");
-    setWorkingMinutes("");
-    setDescription("");
-    setWorkingDate("");
-    setLocation("");
-    setWorkId("");
-  };
   const axiosHandler = useAxios();
 
- 
+  const getTaskById = async (page: number, pageSize: number) => {
+    setLoading(true);
+    try {
+      const response = await axiosHandler.get(
+        `worklog/${appState?.userDetails?.user?.id}?page=${page + 1}&limit=${pageSize}`
+      );
+      const data = response?.data?.data;
+      const formattedData = data?.map((item: any) => ({
+        ...item,
+        display_working_date: new Date(item.working_date)?.toLocaleDateString(),
+        working_hrs_mins: item.working_hrs + "hrs " + item.working_mins + "mins",
+      }));
+      setRows(formattedData || []);
+      setTotalRows(response?.data?.total || 0);
+    } catch (error: any) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getMinutes = () => {
     const mins = [];
     for (let i = 0; i <= 60; i++) {
-      if (i % 5 == 0) {
+      if (i % 5 === 0) {
         mins.push(i);
       }
     }
     return mins;
   };
-  async function updateTask(payload: any) {
+
+  const onClickButton = async (param: any) => {
     try {
-      const url = `${BASE_URL}${Endpoint.UPDATE_TASK}/${payload?._id}`;
-      let headersList = {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + appState?.userDetails?.token,
-      };
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: headersList,
-      });
-      if (response?.status === 200) {
-        const data = await response?.json();
-        resetForm();
-        setNewInsertedData({ data: data?.worklog, isInserted: false });
-        showNotification("success", "Task Updated Successfully!");
-        setisModalOpen(false)
-
-        const updatedRow = {
-          ...data?.worklog,
-          display_working_date: new Date(data?.worklog?.working_date)?.toLocaleDateString(),
-          working_hrs_mins: `${data?.worklog?.working_hrs}hrs ${data?.worklog?.working_mins}mins`,
-        };
-        setRows((prevRows) => {
-          const rowIndex = prevRows.findIndex((row) => row._id === updatedRow._id);
-          if (rowIndex > -1) {
-            const updatedRows = [...prevRows];
-            updatedRows[rowIndex] = updatedRow;
-            return updatedRows;
-          }
-          return [updatedRow, ...prevRows];
-        });
-
+      const response = await axiosHandler.put("worklog", param);
+      if (response?.data?.success) {
+        showNotification("success", "Task updated successfully");
+        setisModalOpen(false);
+        getTaskById(paginationModel.page, paginationModel.pageSize);
       } else {
-        showNotification("error", "Something went wrong");
+        showNotification(response?.data?.message || "Something went wrong", "error");
       }
-    } catch (err) {
-      showNotification("error", "Something went wrong");
-    }
-  }
-
-  const _submitForm = (event: any) => {
-    const param = {
-      _id: workId,
-      projectId: project,
-      project_name: projectData?.find(
-        (project2: any) => project2.id === project
-      )?.name,
-      task_type: taskType,
-      working_date: workingDate,
-      working_hrs: workingHrs,
-      working_mins: workingMinutes,
-      location,
-      task_description: description,
-      username: appState?.userDetails?.user?.name,
-      departmentId: appState?.userDetails?.user?.department,
-      adminId: appState?.userDetails?.adminId,
-    };
-
-    if (workId) {
-      updateTask(param);
-  
-      
+    } catch (error: any) {
+      showNotification(error?.response?.data?.message || "Something went wrong", "error");
     }
   };
- 
-  const handleUpdate = (row: any) => {
-    const projectName = row?.project_name
+
+  const handleEdit = (row: any) => {
+    setProject(row.projectId || "");
+    setTaskType(row.task_type || "");
+    setWorkingHrs(row.working_hrs || "");
+    setWorkingMinutes(row.working_mins || "");
+    setDescription(row.task_description || "");
+    setWorkingDate(row.working_date || "");
+    setLocation(row.location || "");
+    setWorkId(row._id || "");
+    setisModalOpen(true);
+  };
+
+  const handleDelete = async (row: any) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      try {
+        const response = await axiosHandler.delete(`worklog/${row._id}`);
+        if (response?.data?.success) {
+          showNotification("success", "Task deleted successfully");
+          getTaskById(paginationModel.page, paginationModel.pageSize);
+        } else {
+          showNotification(response?.data?.message || "Something went wrong", "error");
+        }
+      } catch (error: any) {
+        showNotification(error?.response?.data?.message || "Something went wrong", "error");
+      }
+    }
+  };
+
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch = 
+      row.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.task_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.task_description?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const projectId = projectData?.find(
-      (project2: any) => project2.name === projectName
-    )?.id
-    const {
-      task_type,
-      working_date,
-      working_hrs,
-      working_mins,
-      location,
-      task_description,
-      _id,
-    } = row;
-    setProject(projectId);
+    const matchesFilter = filterStatus === "all" || row.status === filterStatus;
     
+    return matchesSearch && matchesFilter;
+  });
 
-    setWorkingHrs(working_hrs);
-    setTaskType(task_type);
-    setWorkingMinutes(working_mins);
-    setDescription(task_description);
-    setWorkingDate(working_date);
-    setLocation(location);
-    setWorkId(_id);
+  const columns = [
+    {
+      field: "project_name",
+      headerName: "Project",
+      width: 180,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <span className="font-medium text-gray-900">{params.value}</span>
+        </div>
+      ),
+    },
+    {
+      field: "task_type",
+      headerName: "Task Type",
+      width: 150,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: "task_description",
+      headerName: "Description",
+      width: 300,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="max-w-[280px]">
+          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+            {params.value || "No description"}
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: "working_hrs_mins",
+      headerName: "Duration",
+      width: 120,
+      headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params: any) => (
+        <div className="flex items-center justify-center space-x-1">
+          <FiClock className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-700">{params.value}</span>
+        </div>
+      ),
+    },
+    {
+      field: "display_working_date",
+      headerName: "Date",
+      width: 120,
+      headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params: any) => {
+        const workingDate = new Date(params.row.working_date);
+        const createdAt = new Date(params.row.createdAt);
+        const isSameDate = workingDate.toDateString() === createdAt.toDateString();
+        
+        return (
+          <div className="flex items-center justify-center space-x-1">
+            <FiCalendar className={`w-4 h-4 ${isSameDate ? 'text-gray-500' : 'text-orange-500'}`} />
+            <span className={`text-sm ${isSameDate ? 'text-gray-700' : 'text-orange-600 font-medium'}`}>
+              {params.value}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      field: "location",
+      headerName: "Location",
+      width: 150,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-1">
+          <FiMapPin className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-700">{params.value}</span>
+        </div>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 120,
+      headerClassName: "super-app-theme--header",
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center justify-center space-x-2">
+          <button
+            onClick={() => handleEdit(params.row)}
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Edit"
+          >
+            <FiEdit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(params.row)}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete"
+          >
+            <FiTrash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
-  };
-
-  
-
-  const onClickButton = (type: string) => {
-    if (type) {
-      _submitForm(type);
-    } else {
-      setisModalOpen(false);
-    }
-  };
-
-  const getAllTaskTypeByprojectId = async () => {
-    try {
-      const response = await axiosHandler.get(`/task-type/` + project);
-      const data = response?.data?.data;
-      setTaskTypeList(data);
-    } catch (error: any) { }
-  };
-  useEffect(() => {
-    if (project) {
-      getAllTaskTypeByprojectId()
-    }
-  }, [project])
+  // Remove full page loader - use inline loader instead
 
   return (
-    <div>
-      <div className="m-5"
-        style={styleFromComponent}
-      >
-           {loading && <Loader />}
-        <GridTable
-          onClickAction={onClickAction}
-          actions={["DELETE", "EDIT"]}
-          rowData={rows}
-          columnData={columns}
-          rowCount={totalRows}
-          toolTipName={""}
-          onPaginationChange={handlePaginationChange}
-        />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
+          <p className="text-gray-600 mt-1">View and manage your tasks</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <button className="btn btn-outline flex items-center gap-2">
+            <FiDownload className="w-4 h-4" />
+            Export
+          </button>
+        </div>
       </div>
-      {isModalOpen && <Modal
-       
-       customFooter={true}
-       //modalSize=""
-       modalHeight = "h-[500px]"
-       modalHeader={"Update Task"}
-       modalBody={
-         <div
-           className="grid  gap-x-4 gap-y-4"
-         >
-       <form className="p-4">
-               {/* <img src="/logo.png" className="m-auto" /> */}
-               <div className="w-full  m-auto text-left">
-                 <div className="w-full mb-2 ">
-                   <label className="text-left">Projects</label>
-                   <select
-                     required
-                     value={project}
-                     onChange={(e) => {
-                       setProject(e.target.value);
-                     }}
-                     style={{ borderWidth: 1 }}
-                     className="border-1 border-gray-400 w-full h-8 rounded"
-                   >
-                     <option value="">Select Projects</option>
-                     {projectData?.map((option: any) => (
-                       <option key={option.id} label={option.name} value={option.id}>
-                         {option.name}
-                       </option>
-                     ))}
-                   </select>
-                 </div>
-       
-                 <div>
-                   <label>Tasks</label>
-                   <select
-                     required
-                     value={taskType}
-                     onChange={(e) => setTaskType(e.target.value)}
-                     style={{ borderWidth: 1 }}
-                     className="border-1 border-gray-400 w-full h-8 rounded mb-2"
-                   >
-                     <option value={""}>Select Tasks</option>
-                     {projectData?.[0]?.department==="676175237bf34482eb021c89"?
-                     <>
-                     <option value={"Code Development"}>Code Development</option>
-                     <option value={"Debugging"}>Debugging</option>
-                     <option value={"Testing"}>Testing</option>
-                     <option value={"Ui Design"}>Ui Design</option>
-                     <option value={"Meeting"}>Meeting</option>
-                     <option value={"Customer Support"}>Customer Support</option>
-                     </>
-       :
-       taskTypeList?.map((option: any) => (
-                       <option key={option.id} label={option.name} value={option.name}>
-                         {option.name}
-                       </option>
-                     ))}
-       
-                   </select>
-                 </div>
-       
-                 <div>
-                   <label>Time</label>
-                   <div className="flex">
-                     <select
-                       required
-                       value={workingHrs}
-                       onChange={(e) => setWorkingHrs(e.target.value)}
-                       style={{ borderWidth: 1 }}
-                       className="border-1 border-gray-400 w-full h-8 rounded mb-2"
-                     >
-                       <option value={""}>Select Hours</option>
-                       {[
-                         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                       ].map((e) => (
-                         <option value={e}>{e}</option>
-                       ))}
-                     </select>
-       
-                     <select
-                       required
-                       value={workingMinutes}
-                       onChange={(e) => setWorkingMinutes(e.target.value)}
-                       style={{ borderWidth: 1 }}
-                       className="border-1 border-gray-400 w-full h-8 rounded mb-2 ml-2"
-                     >
-                       <option value={""}>Select Minutes</option>
-                       {getMinutes().map((e) => (
-                         <option value={e}>{e}</option>
-                       ))}
-                     </select>
-                   </div>
-                   <div>
-                     <label>Work Date</label>
-                     <input
-                       value={moment(workingDate).format("YYYY-MM-DD")}
-                       onChange={(e) => {
-                         setWorkingDate(e.target.value);
-                       }}
-                       required
-                       type="date"
-                       // min={moment().subtract(2, "days").format("YYYY-MM-DD")}
-                       style={{ borderWidth: 1 }}
-                       className="border-1 border-gray-400 w-full h-8 rounded mb-2 pl-1"
-                     />
-                   </div>
-                 </div>
-                 <div className="mb-2">
-                   <label>Location</label>
-       
-                   <select
-                     value={location}
-                     onChange={(e) => setLocation(e.target.value)}
-                     required
-                     style={{ borderWidth: 1 }}
-                     className="border-1 border-gray-400 w-full h-8 rounded mb-2"
-                   >
-                     <option color="gray">Select Location</option>
-                     <option value={"Thane"}>Thane</option>
-                     <option value={"Nashik"}>Nashik</option>
-                     <option value={"Chh Sambhaji Nagar"}>Chh Sambhaji Nagar</option>
-                     
-                   </select>
-                 </div>
-                 <div className="">
-                   <label>Descriptions</label>
-                   <textarea
-                     maxLength={2000}
-                     value={description}
-                     onChange={(e) => setDescription(e.target.value)}
-                     required
-                     style={{ height: 200, borderWidth: 1 }}
-                     className="border-1 border-gray-400 w-full h-8 rounded mb-2 pl-1 pr-1"
-                   ></textarea>
-                 </div>
-               </div>
-             </form>
-         </div>
-       }
-       positiveButtonTitle={"Update"}
-       onClickButton={onClickButton}
-     />
-      
 
-      
-}
+      {/* Filters and Search */}
+      <div className="card">
+        <div className="card-body">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="form-input pl-10"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="form-input"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <button className="btn btn-primary flex items-center gap-2">
+              <FiFilter className="w-4 h-4" />
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Task Table */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="text-lg font-semibold text-gray-900">Task List</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Showing {filteredRows.length} of {totalRows} tasks
+          </p>
+        </div>
+        <div className="card-body p-0">
+          <GridTable
+            rowData={filteredRows}
+            columnData={columns}
+            onPaginationChange={handlePaginationChange}
+            rowCount={totalRows}
+            isLoading={loading}
+          />
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {isModalOpen && (
+        <Modal
+          modalHeader="Edit Task"
+          modalSize="max-w-4xl"
+        >
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          onClickButton({
+            _id: workId,
+            projectId: project,
+            project_name: projectData?.find((p: any) => p.id === project)?.name,
+            task_type: taskType,
+            working_date: workingDate,
+            working_hrs: workingHrs || "0",
+            working_mins: workingMinutes || "0",
+            location,
+            task_description: description,
+            username: appState?.userDetails?.user?.name,
+            departmentId: appState?.userDetails?.user?.department,
+            adminId: appState?.userDetails?.adminId,
+          });
+        }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-group">
+              <label className="form-label">Project</label>
+              <select
+                required
+                value={project}
+                onChange={(e) => setProject(e.target.value)}
+                className="form-input"
+              >
+                <option value="">Select project</option>
+                {projectData?.map((option: any) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Task Type</label>
+              <select
+                required
+                value={taskType}
+                onChange={(e) => setTaskType(e.target.value)}
+                className="form-input"
+              >
+                <option value="">Select task type</option>
+                {projectData?.[0]?.department === "676175237bf34482eb021c89" ? (
+                  <>
+                    <option value="Code Development">Code Development</option>
+                    <option value="Debugging">Debugging</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Ui Design">UI Design</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Customer Support">Customer Support</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Code Development">Code Development</option>
+                    <option value="Debugging">Debugging</option>
+                    <option value="Testing">Testing</option>
+                    <option value="UI Design">UI Design</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Customer Support">Customer Support</option>
+                    <option value="Documentation">Documentation</option>
+                    <option value="Research">Research</option>
+                    <option value="Planning">Planning</option>
+                    <option value="Review">Review</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Working Time</label>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  required
+                  value={workingHrs}
+                  onChange={(e) => setWorkingHrs(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Hours</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((hr) => (
+                    <option key={hr} value={hr}>{hr}</option>
+                  ))}
+                </select>
+                <select
+                  required
+                  value={workingMinutes}
+                  onChange={(e) => setWorkingMinutes(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Minutes</option>
+                  {getMinutes().map((min) => (
+                    <option key={min} value={min}>{min}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Work Date</label>
+              <input
+                type="date"
+                value={moment(workingDate).format("YYYY-MM-DD")}
+                onChange={(e) => setWorkingDate(e.target.value)}
+                required
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group md:col-span-2">
+              <label className="form-label">Location</label>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required
+                className="form-input"
+              >
+                <option value="">Select location</option>
+                <option value="Thane">Thane</option>
+                <option value="Nashik">Nashik</option>
+                <option value="Chh Sambhaji Nagar">Chh Sambhaji Nagar</option>
+              </select>
+            </div>
+
+            <div className="form-group md:col-span-2">
+              <label className="form-label">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                maxLength={2000}
+                rows={4}
+                className="form-input resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => setisModalOpen(false)}
+              className="btn btn-outline"
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Update Task
+            </button>
+          </div>
+        </form>
+        </Modal>
+      )}
     </div>
-   
   );
 }

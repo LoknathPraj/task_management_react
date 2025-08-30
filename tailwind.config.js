@@ -17,6 +17,7 @@ module.exports = withMT({
       // mono: ["Menlo", "monospace"],
       // roboto:['Lato', ' Roboto'],
       verdana: ["Verdana", "Arial", "Helvetica"],
+      inter: ["Inter", "system-ui", "sans-serif"],
     },
     screens: {
       "3xsm": "300px",

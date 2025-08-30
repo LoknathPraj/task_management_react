@@ -2,10 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { BASE_URL, Endpoint } from "../constant";
 import { AppContext } from "../context/AppContext";
 import moment from "moment";
-import ViewUserTask from "./ViewUserTask";
+
 import useAxios from "../context/useAxios";
 import { showNotification } from "../components/Toast";
 import Loader from "../components/Loader";
+import InlineLoader from "../components/InlineLoader";
+import { FiPlus, FiCalendar, FiClock, FiMapPin, FiFileText, FiSave, FiX } from "react-icons/fi";
+
 export default function AddTask() {
   const appState: any = useContext(AppContext);
   const [project, setProject] = useState("");
@@ -15,11 +18,12 @@ export default function AddTask() {
   const [description, setDescription] = useState("");
   const [workingDate, setWorkingDate] = useState("");
   const [location, setLocation] = useState("");
-  const [newInsertedData, setNewInsertedData] = useState<any>(null);
+
   const [workId, setWorkId] = useState<any>("");
   const [projectData, setProjectData] = useState<any>();
-  const [taskTypeList,setTaskTypeList]=useState<Array<any>>([])
+
   const [isLoading, setIsLoading] = useState(false);
+  
   const resetForm = () => {
     setProject("");
     setWorkingHrs("");
@@ -30,6 +34,7 @@ export default function AddTask() {
     setLocation("");
     setWorkId("");
   };
+  
   const axiosHandler = useAxios();
 
   const getAllProjects = async () => {
@@ -41,6 +46,7 @@ export default function AddTask() {
       setProjectData(data);
     } catch (error: any) {}
   };
+  
   useEffect(() => {
     getAllProjects();
   }, []);
@@ -54,6 +60,7 @@ export default function AddTask() {
     }
     return mins;
   };
+  
   const _submitForm = (event: any) => {
     event.preventDefault();
     const param = {
@@ -80,284 +87,255 @@ export default function AddTask() {
     }
   };
 
-  const display = { display: "none" };
-  const checkEmptyData = () => {
 
+  
+  const checkEmptyData = () => {
     if (
       project &&
       taskType &&
       workingDate &&
       workingHrs &&
+      workingMinutes &&
       location &&
-      description?.trim() &&projectData?.[0]?.department==="676175237bf34482eb021c89"
+      description?.trim()
     ) {
       return false;
     }
-    else if(project &&
-      taskType &&
-      workingDate &&
-      location &&
-      description?.trim()){
-        return false;
-    }
-    else return true;
+    return true;
   };
 
-  async function addTask(payload: any) {
+  const addTask = async (param: any) => {
     setIsLoading(true);
     try {
-      const url = `${BASE_URL}${Endpoint.ADD_TASK}`;
-      let headersList = {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + appState?.userDetails?.token,
-      };
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: headersList,
-      });
-      if (response?.status === 201) {
-        const data = await response?.json();
-        resetForm();
-        setNewInsertedData({ data: data?.data, isInserted: true });
-        showNotification("success", "Task Added Successfully!");
-      } else {
-        showNotification("error", "Something went wrong");
-      }
-    } catch (err) {
-      showNotification("error", "Something went wrong");
-    }
-    finally {
-      setIsLoading(false); 
-    }
-  }
+      const response = await axiosHandler.post("worklog", param);
+      if (response?.data?.success) {
+        showNotification("success", "Task added successfully");
 
-  async function updateTask(payload: any) {
-    setIsLoading(true); 
+        resetForm();
+      } else {
+        showNotification(response?.data?.message || "Something went wrong", "error");
+      }
+    } catch (error: any) {
+      showNotification(error?.response?.data?.message || "Something went wrong", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateTask = async (param: any) => {
+    setIsLoading(true);
     try {
-      const url = `${BASE_URL}${Endpoint.UPDATE_TASK}/${payload?._id}`;
-      let headersList = {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + appState?.userDetails?.token,
-      };
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: headersList,
-      });
-      if (response?.status === 200) {
-        const data = await response?.json();
-        resetForm();
-        setNewInsertedData({ data: data?.worklog, isInserted: false });
-        showNotification("success", "Task Updated Successfully!");
-      } else {
-        showNotification("error", "Something went wrong");
-      }
-    } catch (err) {
-      showNotification("error", "Something went wrong");
-    }
-    finally {
-      setIsLoading(false); 
-    }
-  }
+      const response = await axiosHandler.put("worklog", param);
+      if (response?.data?.success) {
+        showNotification("success", "Task updated successfully");
 
-  const onUpdate = (row: any) => {
-    const {
-      projectId,
-      task_type,
-      working_date,
-      working_hrs,
-      working_mins,
-      location,
-      task_description,
-      _id,
-    } = row;
-    setProject(projectId);
-    setWorkingHrs(working_hrs);
-    setTaskType(task_type);
-    setWorkingMinutes(working_mins);
-    setDescription(task_description);
-    setWorkingDate(working_date);
-    setLocation(location);
-    setWorkId(_id);
+        resetForm();
+      } else {
+        showNotification(response?.data?.message || "Something went wrong", "error");
+      }
+    } catch (error: any) {
+      showNotification(error?.response?.data?.message || "Something went wrong", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 
-const getAllTaskTypeByprojectId = async () => {
-  try {
-    const response = await axiosHandler.get(`/task-type/`+project);
-    const data = response?.data?.data;
-    setTaskTypeList(data);
-  } catch (error: any) {}
-};
-useEffect(()=>{
-if(project){
-  getAllTaskTypeByprojectId()
-}
-},[project])
+
+  // Remove full page loader - use inline loader instead
+
   return (
-    <div>
-       {isLoading&& <Loader />}
-      <form className="p-4" onSubmit={_submitForm}>
-        {/* <img src="/logo.png" className="m-auto" /> */}
-        <div className="md:w-1/2 sm:w-full  m-auto text-left">
-          <div className="w-full mb-2 ">
-            <label className="text-left">Projects</label>
-            <select
-              required
-              value={project}
-              onChange={(e) => {
-                setProject(e.target.value);
-              }}
-              style={{ borderWidth: 1 }}
-              className="border-1 border-gray-400 w-full h-8 rounded"
-            >
-              <option value="">Select Projects</option>
-              {projectData?.map((option: any) => (
-                <option key={option.id} label={option.name} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Add New Task</h1>
+          <p className="text-gray-600 mt-1">Create and manage your daily tasks</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
+            <FiPlus className="w-6 h-6 text-white" />
           </div>
+        </div>
+      </div>
 
-          <div>
-            <label>Tasks</label>
-            <select
-              required
-              value={taskType}
-              onChange={(e) => setTaskType(e.target.value)}
-              style={{ borderWidth: 1 }}
-              className="border-1 border-gray-400 w-full h-8 rounded mb-2"
-            >
-              <option value={""}>Select Tasks</option>
-              {projectData?.[0]?.department==="676175237bf34482eb021c89"?
-              <>
-              <option value={"Code Development"}>Code Development</option>
-              <option value={"Debugging"}>Debugging</option>
-              <option value={"Testing"}>Testing</option>
-              <option value={"Ui Design"}>Ui Design</option>
-              <option value={"Meeting"}>Meeting</option>
-              <option value={"Customer Support"}>Customer Support</option>
-              </>
-:
-taskTypeList?.map((option: any) => (
-                <option key={option.id} label={option.name} value={option.name}>
-                  {option.name}
-                </option>
-              ))}
-
-            </select>
-          </div>
-
-          <div>
-            <label>Time</label>
-            <div className="flex">
+      {/* Form */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="text-lg font-semibold text-gray-900">Task Details</h2>
+          <p className="text-sm text-gray-600 mt-1">Fill in the task information below</p>
+        </div>
+        
+        <form onSubmit={_submitForm} className="card-body">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Project Selection */}
+            <div className="form-group">
+              <label className="form-label flex items-center gap-2">
+                <FiFileText className="w-4 h-4" />
+                Project
+              </label>
               <select
-                // required
-                required={projectData?.[0]?.department==="676175237bf34482eb021c89"?true:false}
-                value={workingHrs}
-                onChange={(e) => {
-                  if(!workingHrs){
-                    setWorkingMinutes("0")
-                  }
-                  setWorkingHrs(e.target.value)
-                }}
-                style={{ borderWidth: 1 }}
-                className="border-1 border-gray-400 w-full h-8 rounded mb-2"
+                required
+                value={project}
+                onChange={(e) => setProject(e.target.value)}
+                className="form-input"
               >
-                <option value={""}>Select Hours</option>
-                {[
-                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                ].map((e) => (
-                  <option value={e}>{e}</option>
-                ))}
-              </select>
-
-              <select
-                 required={projectData?.[0]?.department==="676175237bf34482eb021c89"?true:false}
-                value={workingMinutes}
-                onChange={(e) => setWorkingMinutes(e.target.value)}
-                style={{ borderWidth: 1 }}
-                className="border-1 border-gray-400 w-full h-8 rounded mb-2 ml-2"
-              >
-                <option value={""}>Select Minutes</option>
-                {getMinutes().map((e) => (
-                  <option value={e}>{e}</option>
+                <option value="">Select a project</option>
+                {projectData?.map((option: any) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
                 ))}
               </select>
             </div>
-            <div>
-              <label>Work Date</label>
+
+            {/* Task Type */}
+            <div className="form-group">
+              <label className="form-label">Task Type</label>
+              <select
+                required
+                value={taskType}
+                onChange={(e) => setTaskType(e.target.value)}
+                className="form-input"
+              >
+                <option value="">Select task type</option>
+                <option value="Code Development">Code Development</option>
+                <option value="Debugging">Debugging</option>
+                <option value="Testing">Testing</option>
+                <option value="UI Design">UI Design</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="Documentation">Documentation</option>
+                <option value="Research">Research</option>
+                <option value="Planning">Planning</option>
+                <option value="Review">Review</option>
+              </select>
+            </div>
+
+            {/* Working Hours */}
+            <div className="form-group">
+              <label className="form-label flex items-center gap-2">
+                <FiClock className="w-4 h-4" />
+                Working Time
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <select
+                  required
+                  value={workingHrs}
+                  onChange={(e) => {
+                    if (!workingHrs) {
+                      setWorkingMinutes("0");
+                    }
+                    setWorkingHrs(e.target.value);
+                  }}
+                  className="form-input"
+                >
+                  <option value="">Hours</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((hr) => (
+                    <option key={hr} value={hr}>{hr}</option>
+                  ))}
+                </select>
+                <select
+                  required
+                  value={workingMinutes}
+                  onChange={(e) => setWorkingMinutes(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Minutes</option>
+                  {getMinutes().map((min) => (
+                    <option key={min} value={min}>{min}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Work Date */}
+            <div className="form-group">
+              <label className="form-label flex items-center gap-2">
+                <FiCalendar className="w-4 h-4" />
+                Work Date
+              </label>
               <input
-                value={moment(workingDate).format("YYYY-MM-DD")}
-                onChange={(e) => {
-                  setWorkingDate(e.target.value);
-                }}
-               
                 type="date"
-                // min={moment().subtract(2, "days").format("YYYY-MM-DD")}
-                style={{ borderWidth: 1 }}
-                className="border-1 border-gray-400 w-full h-8 rounded mb-2 pl-1"
+                value={moment(workingDate).format("YYYY-MM-DD")}
+                onChange={(e) => setWorkingDate(e.target.value)}
+                className="form-input"
+                required
               />
             </div>
-          </div>
-          <div className="mb-2">
-            <label>Location</label>
 
-            <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              style={{ borderWidth: 1 }}
-              className="border-1 border-gray-400 w-full h-8 rounded mb-2"
-            >
-              <option color="gray">Select Location</option>
-              <option value={"Thane"}>Thane</option>
-              <option value={"Nashik"}>Nashik</option>
-              <option value={"Chh Sambhaji Nagar"}>Chh Sambhaji Nagar</option>
-            </select>
+            {/* Location */}
+            <div className="form-group md:col-span-2">
+              <label className="form-label flex items-center gap-2">
+                <FiMapPin className="w-4 h-4" />
+                Location
+              </label>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required
+                className="form-input"
+              >
+                <option value="">Select location</option>
+                <option value="Thane">Thane</option>
+                <option value="Nashik">Nashik</option>
+                <option value="Chh Sambhaji Nagar">Chh Sambhaji Nagar</option>
+              </select>
+            </div>
+
+            {/* Description */}
+            <div className="form-group md:col-span-2">
+              <label className="form-label">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                maxLength={2000}
+                rows={6}
+                className="form-input resize-none"
+                placeholder="Describe the task details..."
+              />
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {description.length}/2000 characters
+              </div>
+            </div>
           </div>
-          <div className="">
-            <label>Descriptions</label>
-            <textarea
-              maxLength={2000}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              style={{ height: 200, borderWidth: 1 }}
-              className="border-1 border-gray-400 w-full h-8 rounded mb-2 pl-1 pr-1"
-            ></textarea>
-          </div>
-          <div className="m-auto text-center mt-2 flex">
-            <button
-              disabled={checkEmptyData()}
-              type="submit"
-              className={`${
-                checkEmptyData()
-                  ? "bg-gray-500 text-black-300"
-                  : "bg-blue-700 text-white"
-              } p-2 rounded m-auto w-1/3`}
-            >
-              {workId ? "Update" : "Submit"}
-            </button>
+
+          {/* Form Actions */}
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
             {workId && (
               <button
-                onClick={resetForm}
                 type="button"
-                className="bg-blue-700 text-white p-2 rounded m-auto w-1/3"
+                onClick={resetForm}
+                className="btn btn-outline flex items-center gap-2"
               >
+                <FiX className="w-4 h-4" />
                 Cancel
               </button>
             )}
+            <button
+              type="submit"
+              disabled={checkEmptyData() || isLoading}
+              className={`btn flex items-center gap-2 ${
+                checkEmptyData() || isLoading
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "btn-primary"
+              }`}
+            >
+              {isLoading ? (
+                <InlineLoader text={workId ? "Updating..." : "Creating..."} />
+              ) : (
+                <>
+                  <FiSave className="w-4 h-4" />
+                  {workId ? "Update Task" : "Create Task"}
+                </>
+              )}
+            </button>
           </div>
-        </div>
-      </form>
-      <ViewUserTask
-        insertedRecord={newInsertedData}
-        onUpdate={onUpdate}
-        styleFromComponent={display}
-      />
+        </form>
+      </div>
+
+
     </div>
   );
 }
